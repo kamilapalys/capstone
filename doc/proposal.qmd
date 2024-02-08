@@ -1,7 +1,7 @@
 ---
-title: "Proposal: [Your project name]"
+title: "Proposal: Analyzing Differences and Identifying Biases in News Sources"
 subtitle: "DATA 450 Capstone"
-author: "[Your Name]"
+author: "Kamila Palys"
 date: today
 date-format: long
 bibliography: references.bib
@@ -13,11 +13,14 @@ jupyter: python3
 
 # Introduction
 
-[This section should contain background and introduction to your general topic.]
+All people have their own biases, whether they are conscious or subconscious. Larger entities and organizations are also known to show bias across many industries, and bias coming from widely known or used sources can be even more dangerous because of how influential ideas can be. In particular, this project will take a close look at biases present in various news sites. These sometimes have to do with the political party that some sources are affiliated with. Sources may also report some news with a positive or negative connotation, when they really have a responsibility to inform of news in a neutral way, not give their opinion on them. This project hopes to provide insight into the word choice of selected news sources and which ones may have a tendency to be more biased so that readers may make informed decisions on where to hear about news.
 
 # Dataset
 
-[In this section, desribe the dataset(s). This includes things like where you
+[The dataset used for this project will be presented in various formats to allow for the usage of different techniques. One format will have each feature be a token, or word, each row be an article, and the values be a 0 or 1 to represent if the token appears in the article. Another format will have the same columns and rows, but the values being the frequency of the token appearance in the article. In each format, there will also be one column that will tell which news site the article comes from. The articles will come from the following sources: [CNN](https://www.cnn.com), [The New York Times](https://www.nytimes.com), [The Washington Post](https://www.washingtonpost.com), [Fox News](https://www.foxnews.com), New York Post, MSNBC, NBC, MSN, The Wall Street Journal, and BBC.
+  
+  
+In this section, desribe the dataset(s). This includes things like where you
 obtained the dataset. Include a full citation, as specified 
 [here](https://guides.lib.umich.edu/c.php?g=282964&p=3285995). Describe how the
 data was obtained by the data owner/curator, as best as you can. List the 
@@ -27,10 +30,18 @@ variables that you plan to use in your analysis, for example:
 * sex: The patient's sex, male or female
 * age: The patient's age (months)
 
+
+
+
 ]
 
 # Data Acquisition and Processing
 
+The data used in this project is collected from a variety of sources. Ten total news sites are studied, consisting of CNN, The New York Times, The Washington Post, Fox News, New York Post, MSNBC, NBC, MSN, The Wall Street Journal, and BBC. For the training set, five major political events and topics from 2023 are covered from each of sources, for a total of fifty articles. The events covered are the indictment of Trump, the Supreme Court's ruling against affirmative action, Biden's low approval rates in polls, the Chinese surveillance balloon, and the deadliest attack by Hamas to date. For the testing set, an additional 2 events and topics are covered from each source for a total of twenty articles. These two events include the Pentagon documents leak and the Russia-Ukraine War. This will make for an approximately 70/30 training/testing split. 
+
+The text from each of the articles will be copied and pasted into a text file. Some preprocessing to be done on this text will include, but not be limited to, the removal of punctuation and stopwords, making all words lowercase, and stemming. All of the words, or tokens, from all articles will be brought together into a single pandas dataframe. Each token will be made into a feature, with an additional feature being made to represent the source of the article. 
+  
+  
 [In this section, if applicable, describe how you will obtain the data (if it's
 anything more complicated than a simple download). Discuss what data 
 processing steps will be needed, such as recoding variables, data cleaning,
@@ -45,41 +56,47 @@ question. Include the specific steps you will take, what form the answer will
 take (a number? table? visualization? model? Give all the specifics), and 
 estimate how many hours each question will take to complete.]
 
-1. Is smoking correlated with diabetes? To answer this, I will create a filled
-bar plot, with the left bar representing non-smokers, the middle bar
-representing people who smoke moderately, and the right bar representing heavy
-smokers. The bars will be the same height, and each bar will be
-colored two colors based on the proportion of patients in the group who do or
-do not have diabetes.
+1. Are the news sources that are similar to each other in wording associated to the same side of the political spectrum? To answer this, I will perform hierarchical clustering on the news sources. To cluster news sources as a whole, I will have to represent each row as a combination of all the articles from a single news source. I will display the results in a dendrogram and observe which news sources were clustered together first, meaning they were most similar. Based on commonly held public opinions shared on the internet, I will then determine if the sources clustered together lean the same way politically. 
 
-2. Question 2? Plan for question 2.
+2. How does wording differ between the news sites? This question will be answered by comparing the frequencies and TF-IDF's of each word in each news site. Similarly to the last question, for this question, each instance will have to represent the whole news source and combine all of its articles. Then, this will be visualized in word clouds, with one word cloud being created per source. Insights will be given by comparing most frequent or significant terms across sources that are supposed to be reporting on the same events. 
 
-3. Question 3? Plan for question 3.
+3. Can some news sources be said to be more positive or negative than others? This question will be answered with the help of various Python libraries built for sentiment analysis, like Natural Language Toolkit (nltk) and TextBlob. These libraries will assign a polarity score to each article to represent how much of a positive or negative connotation it has. The articles will have to be saved as a string for this question. I may also compute the average score per source. Scores may be visualized in a bar chart, with the y-axis representing the score, each bar representing an article, and the bars being grouped by the news source. 
 
-4. etc.
+4. Is the wording of various news sources different enough to be able to correctly predict which source an article comes from? This question will be answered through machine learning. Models will be trained and tested on the respective sets of data to be able to predict which news site an article came from, given its raw text. Functions will be created along the way that will be able to take any article text, such as from the testing set of articles, and perform the necessary preprocessing to a dataframe. Some classifiers to be used for this modeling are Naive Bayes, Random Forest, and Stochastic Gradient Descent (SGD), given that these handle multiple classes. Accuracy of the models will be looked at as the performance metric and a high accuracy may imply that there is a strong distinction in the wording between these sources. A confusion matrix will also be generated for each model with a heatmap on top to analyze model performance. 
+
+5. Can bias be detected in any of the studied news sources? To answer this question, bias will be determined through sentiment analysis. Results from question three may be used to compare average polarity scores across news sites and see if any one of the news sites' average scores is an outlier, determined by the interquartile range formula. Having an average score that is an outlier will mean that the source has an unusually positive or negative connotation to it compared to the other sources, indicative of bias, since news articles should be neutral. Results from question three using TextBlob will also give a subjectivity score, which measures how much personal opinion rather than factual information is in the text. 
+
 
 # Work plan
 
-[Fill in the list below with a plan for what you will do each week, starting 2/12. You should
-have around 7 hours worth of work each week. Writing work counts. Several tasks
-have already been filled in for you.]
+**Week 4 (2/12 - 2/18):** 
 
-**Week 4 (2/12 - 2/18):** [Just an example: 
-
-* Data tidying and recoding (4 hours)
-* Question 2 (4 hours).]
+* Save all article text into text files (2 hours)
+* Data cleaning (remove stopwords, punctuation, etc.) (3 hours)
+* Create dataframe with binary values (2 hours)
 
 **Week 5 (2/19 - 2/25):**
 
+* Create dataframe with term frequency values (1 hour)
+* Create dataframe with term TF-IDF values (2 hours)
+* Create dataframe where each row represents all articles from one source (1 hour)
+* Q1: Clustering and dendrogram (3 hours)
+
 **Week 6 (2/26 - 3/3):**
+
+* Q2: Create word clouds (2 hours)
+* Q3: Sentiment Analysis and its bar charts (3 hours)
+* Research past work on detecting biases or subjectivity in text data (2 hours)
 
 **Week 7 (3/4 - 3/10):**
 
 * Presentation prep and practice (4 hours)
+* Q5: Calculate average polarity scores, detect outliers, calculate subjectivity scores, and interpret (3 hours)
 
 **Week 8 (3/11 - 3/17):** *Presentations given on Wed-Thu 3/13-3/14. Poster Draft due Friday 3/15 (optional extension till 3/17).*
 
 * Poster prep (4 hours)
+* Q4: Naive Bayes model (1.5 hours)
 * Presentation peer review (1.5 hours)
 
 **Week 9 (3/25 - 3/31):** *Final Poster due Sunday 3/31*.
@@ -91,10 +108,19 @@ have already been filled in for you.]
 * [Do not schedule any other tasks for this week.]
 
 **Week 10 (4/1 - 4/7):** 
+* Q4: Random Forest model (1.5 hours)
+* Read about Stochastic Gradient Descent (SGD) model and its algorithm (2 hours)
+* Q4: Create (SGD) model (2 hours)
+* Calculate performance metrics of models and create bar chart comparing accuracy scores (1.5 hours)
 
 **Week 11 (4/8 - 4/14):**
+* Confusion matrices with heatmap on top, interpret (2 hours)
+* Start writing up blog (2 hours)
+* Search for and collect articles from sources not studied (3 hours)
 
 **Week 12 (4/15 - 4/21):**
+* Use models on those articles from other sources to see how they would be classified (2 hours)
+* Continue blog post and interpreting results (5 hours)
 
 **Week 13 (4/22 - 4/28):** *Blog post draft 1 due Sunday night 4/28.*
 [All project work should be done by the end of this 
@@ -114,34 +140,6 @@ week. The remaining time will be used for writing up and presenting your results
 * Peer feedback (2 hours)
 * [Do not schedule any other tasks for this week.]
 
-## Some cool Quarto stuff
-
-[You can delete this section from your proposal.]
-
-For your reference, here's an example of a Python code cell in Quarto,
-along with a figure that gets generated, along with a caption and a label
-so that it can be referred to automatically as "Figure 1" (or whatever)
-in the writeup.
-
-For a demonstration of a line plot on a polar axis, see @fig-polar.
-
-```{python}
-#| label: fig-polar
-#| fig-cap: "A line plot on a polar axis"
-
-import numpy as np
-import matplotlib.pyplot as plt
-
-r = np.arange(0, 2, 0.01)
-theta = 2 * np.pi * r
-fig, ax = plt.subplots(
-  subplot_kw = {'projection': 'polar'} 
-)
-ax.plot(theta, r)
-ax.set_rticks([0.5, 1, 1.5, 2])
-ax.grid(True)
-plt.show()
-```
 
 Here's an example of citing a source [see @phil99, pp. 33-35]. Be sure the source information is entered in "BibTeX" form in the `references.bib` file.
 
