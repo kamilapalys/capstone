@@ -1,0 +1,74 @@
+On Saturday, as U.S. officials and their foreign allies scrambled to understand how dozens of classified intelligence documents had ended up on the internet, they were stunned — and occasionally infuriated — at the extraordinary range of detail the files exposed about how the United States spies on friends and foes alike.
+
+The documents, which appear to have come at least in part from the Pentagon and are marked as highly classified, offer tactical information about the war in Ukraine, including the country’s combat capabilities. According to one defense official, many of the documents seem to have been prepared over the winter for Gen. Mark A. Milley, chairman of the Joint Chiefs of Staff, and other senior military officials, but they were available to other U.S. personnel and contract employees with the requisite security clearances.
+
+President Biden told reporters in Dublin on April 13 that there is no update on a leak of classified U.S. military documents. (Video: The Washington Post)
+Other documents include analysis from U.S. intelligence agencies about Russia and several other countries, all based on information gleaned from classified sources.
+
+The series of detailed briefings and summaries open a rare window on the inner workings of American espionage. Among other secrets, they appear to reveal where the CIA has recruited human agents privy to the closed-door conversations of world leaders; eavesdropping that shows a Russian mercenary outfit tried to acquire weapons from a NATO ally to use against Ukraine; and what kinds of satellite imagery the United States uses to track Russian forces, including an advanced technology that appears barely, if ever, to have been publicly identified.
+
+Officials in several countries said that they were trying to assess the damage from the disclosures, and many were left wondering how they had gone unnoticed for so long. Photographs of at least several dozen pages of highly classified documents, which looked to have been printed and then folded together into a packet, were shared on Feb. 28 and March 2 on Discord, a chat platform popular with gamers. The documents were shared by a user to a server called “Wow Mao.”
+
+Some of the documents appear to be detailed Ukraine battlefield assessments prepared over the winter for senior Pentagon leaders. But officials only became aware that the documents were sitting on a public server around the time that the New York Times first reported the leak, on Thursday, according to people familiar with the matter, who spoke on the condition of anonymity to describe an unfolding investigation.
+
+Senior Pentagon leadership restricted the flow of intelligence Friday in response to the revelations, two U.S. officials said. One described the clampdown as unusually strict and said it revealed a high level of panic among Pentagon leadership.
+
+A European intelligence official worried that if Washington restricts allies’ access to future intelligence reports, it could leave them in the dark. Many of the leaked documents are labeled “NOFORN,” meaning they cannot be released to foreign nationals. But others were cleared to be shared with close U.S. allies, including the Five Eyes alliance of the United States, Britain, Canada, Australia and New Zealand. U.S. intelligence about British and Canadian activities is contained in some of the documents, suggesting that the fallout from the leaks will not be limited to the United States.
+
+“We need to manage this well both internally and externally,” a second defense official said. “There are lot of institutions and agencies involved.”
+
+The Justice Department has opened an investigation into the leak. A spokeswoman for Discord, where the earliest known copies of the images were posted, declined to comment.
+
+The full extent of the leak was unclear. The second defense official said that what had appeared online was likely the result of a single disclosure from one tranche of documents, but officials were not yet certain of that.
+
+The 5o pages reviewed by The Washington Post involved nearly every corner of the U.S. intelligence apparatus. The documents describe intelligence activities at the National Security Agency, the CIA, the Defense Intelligence Agency, law enforcement agencies and the National Reconnaissance Office (NRO) — arguably the most secretive intelligence agency in the government, responsible for a multibillion dollar constellation of spy satellites.
+
+The documents primarily concern the war in Ukraine and demonstrate how the United States is making assessments about the state of the conflict and where it’s headed. That analysis informs major policy decisions by the Biden administration, including what weapons to provide Ukraine and how to respond to Russia’s battlefield strategy.
+
+For instance, a Feb. 23 overview of fighting in Ukraine’s Donbas region forecasts a “grinding campaign of attrition” by Russia that “is likely heading toward a stalemate, thwarting Moscow’s goal to capture the entire region in 2023.”
+
+That confident statement, which is printed in boldface type, is supported by information obtained from “NRO-collected and commercial imagery,” a new generation of infrared satellites, signals intelligence and “liaison reporting,” a reference to intelligence from a friendly government, about the high rate of Russian artillery fire, mounting troop losses and the military’s inability to make significant territorial gains over the past seven months.
+
+The fact that the United States bases its assessments on many sources is no secret. But U.S. officials said these more detailed disclosures could help Moscow thwart some avenues for collecting information. For example, the Feb. 23 battlefield document names one of its sources as “LAPIS time-series video.” Officials familiar with the technology described it as an advanced satellite system that allows for better imaging of objects on the ground and that could now be more susceptible to Russian jamming or interference. They indicated that LAPIS was among the more closely guarded capabilities in the U.S. intelligence arsenal.
+
+The documents also demonstrate what has long been understood but never publicly spelled out this precisely: The U.S. intelligence community has penetrated the Russian military and its commanders so deeply that it can warn Ukraine in advance of attacks and reliably assess the strengths and weaknesses of Russian forces.
+
+A single page in the leaked trove reveals that the U.S. intelligence community knew the Russian Ministry of Defense had transmitted plans to strike Ukrainian troop positions in two locations on a certain date in February and that Russian military planners were preparing strikes on a dozen energy facilities and an equal number of bridges in Ukraine.
+
+The documents reveal that U.S. intelligence agencies are also aware of internal planning by the GRU, Russia’s military intelligence agency. One document describes the GRU planning a propaganda campaign in African countries with the goal of turning public support against leaders who support assistance to Ukraine and discrediting the United States and France, in particular. The Russian campaign, the report states, would try to plant stories in African media, including ones that tried to discredit Ukraine and its president, Volodymyr Zelensky.
+
+The documents point to numerous intelligence successes by the United States. But they also show how depleted Ukrainian forces have become after more than a year at war.
+
+A senior Ukrainian official on Saturday said the leaks had angered Kyiv’s military and political leaders, who have sought to conceal from the Kremlin vulnerabilities related to ammunition shortages and other battlefield data. The official said he was also concerned that more revelations of classified military intelligence were forthcoming.
+
+In the meantime, some of the now public intelligence could ignite diplomatic controversies.
+
+The documents show that the United States has gained access to the internal plans of Russia’s notorious Wagner Group, a private military contractor that has supplied forces to Russia’s war effort, and that Wagner has sought to purchase arms from Turkey, a NATO ally.
+
+In early February, Wagner personnel “met with Turkish contacts to purchase weapons and equipment from Turkey for Vagner’s efforts in Mali and Ukraine,” one report states, using a variation on the spelling of the group’s name. The report further states that Mali’s interim president, Assimi Goïta, “had confirmed that Mali could acquire weapons from Turkey on Vagner’s behalf.”
+
+It’s unclear from the report what the Turkish government may have known about the efforts by Wagner or if they proved fruitful. But the revelation that a NATO ally may have been assisting Russia in its war on Ukraine could prove explosive, particularly as Turkey has sought to block the addition of Sweden into the ranks of the trans-Atlantic military alliance.
+
+A spokesperson for the Turkish government declined to comment. Mali’s Embassy in Washington didn’t respond to a request for comment.
+
+Two other pages from the leaked intelligence file speak to Wagner’s plans for hiring Russian prisoners to fight in Ukraine and note that the Russian military has become dependent on the private soldiers. Like the report on meetings involving Turkey, these cite their sources as coming from “signals intelligence,” a reference to electronic eavesdropping and communications intercepts. Officials generally view those as among the most productive forms of intelligence-gathering, but they are potentially perishable if they are exposed.
+
+Other intelligence reports among the leaked trove reflect on the geopolitical ramifications of the war in Ukraine. A summary of analysis from the CIA’s World Intelligence Review, a daily publication for senior policymakers, says that Beijing is likely to view attacks by Ukraine deep inside Russian territory as “an opportunity to cast NATO as the aggressor,” and that China could increase its support to Russia if it felt the attacks were “significant.”
+
+U.S. and European officials have eyed warily the alliance between Moscow and Beijing. So far, officials have said there is no indication that China has granted Russia’s request for lethal military aid. However, a Ukrainian attack on Moscow using weapons provided by the United States or NATO would probably indicate to Beijing that “Washington was directly responsible for escalating the conflict” and provide possible justification for China to arm Russia, the analysis concludes.
+
+The documents also show that Washington is keeping a close eye on Iran’s pursuit of a nuclear weapon. One briefing from February succinctly notes that in recent days Iran had conducted tests of short-range ballistic missiles. Another takes stock of a newly published report by the International Atomic Energy Agency on Iran’s efforts to expand its facilities for enriching uranium.
+
+Those reports appear offered as routine updates to policymakers. But another, which purports to derive from signals intelligence and “diplomatic reporting,” offers a dim assessment on behalf of the U.S. intelligence community of the IAEA’s ability to carry out its nuclear security mission.
+
+Other reports provide updates on North Korea’s nuclear weapons program, including missile tests. And in a reminder that the United States also spies on its allies, another document reports that South Korea’s National Security Council in early March “grappled” with a U.S. request that the country provide artillery ammunition to Ukraine, without unduly provoking Moscow. South Korea’s national security adviser suggested possibly selling the munitions to Poland, which controls the main weapons supply routes, since it was the U.S. goal to get the material to Ukraine quickly, the report said, citing signals intelligence.
+
+The original source of the leak remains unclear. The Post identified the user that shared the images in February and March who, according to a review of previous social media posts, is based in southern California. A Twitter account using the same handle and avatar image as the Discord account wrote on Friday they had “found some info from a now banned server and passed it on.”
+
+A man who answered the door at a house registered to the Discord user’s father on Friday evening declined to comment. “I’m not talking to anyone,” he said, closing the door of the family’s home at the edge of a cul-de-sac.
+
+About three miles away, at a townhouse registered to the user’s mother, a knock at the door went unanswered. The parents did not respond to calls or messages.
+
+On Wednesday, images showing some of the documents were also circulating on the anonymous online message board 4chan and made their way to at least two mainstream social media platforms, Telegram and Twitter. In at least one case, it appears a slide which initially circulated on Discord was doctored to make it look like fewer Russian soldiers have been killed in the war than the Pentagon assesses.
+
+There was no indication that other documents, including those that dealt with countries besides Ukraine, had been altered.
