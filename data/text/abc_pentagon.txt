@@ -15,7 +15,7 @@ What has been posted on the internet are dozens of photographs of printouts of w
 
 ABC News has been able to review 38 of these apparently classified U.S. intelligence documents drafted in late February and on March 1 and March 2.
 
-The documents are a mix of tactical statistics and maps of the battlefield in Ukraine apparently drafted by the Pentagon's Joint Staff. Others appear to be more strategic-level U.S. intelligence analyses that touch on Ukraine's fight with Russia and other regions of the world that seem to have been put together by the CIA and other U.S. intelligence agencies.
+The documents are a mix of tactical statistics and maps of the battlefield in Ukraine apparently drafted by the Pentagon's Joint Staff. Others appear to be more strategic-level U.S. intelligence analyses that touch on Ukraine's fight with Russia and other regions of the world that seem to have been put together by the CIA and other U.S. intelligence agencies. 
 
 Almost all of the 38 documents are classified as top secret and contain specific information about whether they can be shared with foreign partners. They also include how the information was obtained, including signals intercepts.
 
@@ -85,4 +85,4 @@ He said once a potential suspect or suspects are identified, there will be a var
 
 Another complicating factor for investigators, he noted, could be that some of the documents appear to have been posted several months ago.
 
-"Depending on how all of this was done there could be electronic evidence that has been lost," he said. "If there was information that you could have gotten and followed up on, within days of the incident, have you lost either access to that initial information or other places it would take you with the passage of more time? That's always a big impediment."
+"Depending on how all of this was done there could be electronic evidence that has been lost," he said. "If there was information that you could have gotten and followed up on, within days of the incident, have you lost either access to that initial information or other places it would take you with the passage of more time? That's always a big impediment." abcarticle pentagonarticle
