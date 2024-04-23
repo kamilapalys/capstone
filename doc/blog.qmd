@@ -18,11 +18,403 @@ jupyter: python3
 
 ![Source: Unsplash](newspaper.jpg){fig-alt="A man reading a newspaper."}
 
-# Welcome
+# Introduction
+
+Everybody at some point has been at the center of a debate or has heard one about which news sources are trustworthy or not. These opinions clearly tend to be associated with the identification of a political party. A lot of the times, these opinions are largely subjective, but can they be confirmed or changed with a more technical analysis on news sources? This project takes a closer look at the language that various news sources use and examines if these news sources really report on the same events in a different manner. This will be done mainly through sentiment analysis and creating classifiers to predict the source of a given article. 
+
+# Data Collection
+
+ Nine total news sites are studied for a mix of political affiliations, including CNN, The New York Times, The Washington Post, Fox News, New York Post, NBC News, The Wall Street Journal, BBC, and ABC News. Eight political events and topics from 2023 were chosen as the subjects for the articles to be studied for a higher potential for bias. For each topic, one article from each source was collected, making for a total of 72 articles. To ensure as little room for extraneous variables as possible, the articles for a particular topic across sources were chosen in a way so that they were published on the same day or as closely together in time as possible. This would mean that each source should have had the same information available when writing the article. The text from each article was collected through copying and pasting into its own text file. In addition, a string denoting each article's topic and source name was added to the end of each article's text file to be able to identify it. 
+
+# Preprocessing the Data
+
+The text had to go through a lot of preparation before it could be ready for analyzing. Functions were created to make this process faster for each article. One function accesses a text file and returns a string of all the text in there. Another function cleans the text, which includes making all text lowercase, removing punctuation, removing stopwords (words like "and," "the," etc.), and stemming words, if desired. Stemming words keeps only the root form of a word, removing suffixes so that words like "jumps" and "jumping" are both reduced to "jump." This is desired for some parts of the analysis in this project, but not others. 
+
+```{python}
+# initialize dictionary to be able to trace back a stemmed word to its original form
+stemmed_dict = {}
+
+def file_to_string(filename):
+  '''Opens the input text file and
+  returns a string of all its text.'''
+  file = open(filename, 'r')
+  text = file.read()
+  file.close()
+  text = text.replace('\n', ' ')
+  text = text.replace('  ', ' ')
+  return text
+
+def clean_text(text, stem):
+  '''Takes in a string of text and cleans it by converting
+  to lowercase, removing punctuation, and removing stopwords. 
+  Also takes in a binary value to indicate if stemming should
+  be performed. Returns the new string.'''
+  if stem not in [0, 1]:
+      raise ValueError("Stem must be a binary value (0 or 1)")
+  ps = PorterStemmer()
+  stemmed_dict = {}
+  # create list of stopwords 
+  stopwords_list = stopwords.words('english')
+  # make the text lowercase
+  text = text.lower()
+  text = text.replace('—', ' ')
+  text = text.replace('u.s.', 'us')
+  # convert to ascii characters
+  text = text.encode("ascii", "ignore").decode()
+  for chr in text:
+      # only keep characters in the string that are not punctuation symbols
+      if (chr in string.punctuation or chr in string.digits):
+          text = text.replace(chr, ' ')
+  text = text.replace('  ', ' ')
+  # stem the tokens within the text
+  tokens = text.split()
+  new_tokens = []
+  for token in tokens[:-2]: # last two tokens identify source and topic, we do not want to stem them
+      # only include new token in the cleaned list if not a stopword
+      if token not in stopwords_list:
+          if stem == 1:
+              stemmed_word = ps.stem(token)
+              new_tokens.append(stemmed_word)
+              # to be able to map each token to the resulting stemmed word
+              if token not in stemmed_dict:
+                  stemmed_dict[token] = stemmed_word
+          else:
+              new_tokens.append(token)
+  # add back in last two tokens
+  new_tokens.append(tokens[-2])
+  new_tokens.append(tokens[-1])
+  cleaned_text = " ".join(new_tokens)
+  cleaned_text = cleaned_text.replace('  ', ' ')
+  return cleaned_text
+```
+
+# Dataframes
+
+All of the article text collected is then transformed into multiple dataframe versions. One way of representing textual data within a dataframe is with binary values. In this case, each column is a token, or a word, that appears in any of the documents (articles) collected. Each row represents one document. The values are either a 0 or 1, denoting whether or not the token appears within the article. Another representation as a dataframe has the values of the dataframe as the frequencies of each token within an article. Finally, another dataframe is created with the Term Frequency-Inverse Document Frequency (TF-IDF) scores of the tokens within an article as the values. Some of these dataframes may work better than others when it comes to the predictive modeling portion of the project and revealing patterns within the text of a news source. 
+
+```{python, include=False}
+import os
+from os import listdir
+
+# we want to be in the capstone folder, not in the doc folder
+os.chdir("..")
+```
+
+```{python, include=False}
+pwd
+```
+
+```{python}
+import pandas as pd
+import numpy as np
+import nltk
+from nltk.corpus import stopwords
+from nltk.stem import PorterStemmer
+import string
+from string import punctuation
+from tensorflow.keras.preprocessing.text import Tokenizer
+
+# looping through all text files to apply preprocessing functions
+article_docs = []
+dir = os.listdir('data/text/')
+dir.sort()
+for filename in dir:
+    filepath = os.path.join('data/text/', filename)
+    if filename.split(".")[-1] == "txt":
+        article_string = file_to_string(filepath)
+        new_string = clean_text(article_string, 1)
+        article_docs.append(new_string)
+
+# convert the list of article strings into a binary-value dataframe
+t = Tokenizer()
+t.fit_on_texts(article_docs)
+print(t)
+encoded_docs = t.texts_to_matrix(article_docs, mode='binary')
+words = [x for x in t.word_index.keys()]
+binary_df = pd.DataFrame(data = encoded_docs[:, 1:], columns=words)
+# List of conditions
+source_conditions = [
+      binary_df['abcarticle'] == 1
+    , binary_df['bbcarticle'] == 1
+    , binary_df['cnnarticle'] == 1
+    , binary_df['foxarticle'] == 1
+    , binary_df['nbcarticle'] == 1
+    , binary_df['nyparticle'] == 1
+    , binary_df['nytarticle'] == 1
+    , binary_df['wparticle'] == 1
+    , binary_df['wsjarticle'] == 1
+]
+
+# List of values to return
+source_choices  = [
+      "ABC News"
+    , "BBC"
+    , "CNN"
+    , "Fox News"
+    , "NBC News"
+    , "New York Post"
+    , "The New York Times"
+    , "The Washington Post"
+    , "The Wall Street Journal"
+]
+
+# List of conditions
+topic_conditions = [
+      binary_df['affirmativearticle'] == 1
+    , binary_df['balloonarticle'] == 1
+    , binary_df['bidenarticle'] == 1
+    , binary_df['hamasarticle'] == 1
+    , binary_df['pentagonarticle'] == 1
+    , binary_df['santosarticle'] == 1
+    , binary_df['tanksarticle'] == 1
+    , binary_df['trumparticle'] == 1
+]
+# List of values to return
+topic_choices  = [
+      "Supreme Court Ruling on Affirmative Action"
+    , "Chinese Surveillance Balloon"
+    , "Biden's Low Approval Rates in Polls"
+    , "The Deadliest Attack by Hamas"
+    , "Pentagon Documents Leak"
+    , "George Santos' Expulsion from Congress"
+    , "U.S. and Germany Send Tanks to Ukraine"
+    , "Trump's Indictment"
+]
+# create a new source column 
+binary_df["article_source"] = np.select(source_conditions, source_choices, "ERROR")
+
+# create a new topic column
+binary_df["article_topic"] = np.select(topic_conditions, topic_choices, "ERROR")
+
+# drop the token columns that identify the topic/source, not part of actual article text
+binary_df.drop(columns=['abcarticle', 'bbcarticle', 'cnnarticle', 'foxarticle', 'nbcarticle',
+                        'nyparticle', 'nytarticle', 'wparticle', 'wsjarticle', 'affirmativearticle',
+                        'balloonarticle', 'bidenarticle', 'hamasarticle', 'pentagonarticle',
+                        'santosarticle', 'tanksarticle', 'trumparticle'], inplace=True)
+
+binary_df.head()
+
+encoded_docs_freq = t.texts_to_matrix(article_docs, mode='count')
+freq_df = pd.DataFrame(data = encoded_docs_freq[:, 1:], columns=words)
+# List of conditions
+source_conditions = [
+      freq_df['abcarticle'] == 1
+    , freq_df['bbcarticle'] == 1
+    , freq_df['cnnarticle'] == 1
+    , freq_df['foxarticle'] == 1
+    , freq_df['nbcarticle'] == 1
+    , freq_df['nyparticle'] == 1
+    , freq_df['nytarticle'] == 1
+    , freq_df['wparticle'] == 1
+    , freq_df['wsjarticle'] == 1
+]
+
+# List of values to return
+source_choices  = [
+      "ABC News"
+    , "BBC"
+    , "CNN"
+    , "Fox News"
+    , "NBC News"
+    , "New York Post"
+    , "The New York Times"
+    , "The Washington Post"
+    , "The Wall Street Journal"
+]
+
+# List of conditions
+topic_conditions = [
+      freq_df['affirmativearticle'] == 1
+    , freq_df['balloonarticle'] == 1
+    , freq_df['bidenarticle'] == 1
+    , freq_df['hamasarticle'] == 1
+    , freq_df['pentagonarticle'] == 1
+    , freq_df['santosarticle'] == 1
+    , freq_df['tanksarticle'] == 1
+    , freq_df['trumparticle'] == 1
+]
+# List of values to return
+topic_choices  = [
+      "Supreme Court Ruling on Affirmative Action"
+    , "Chinese Surveillance Balloon"
+    , "Biden's Low Approval Rates in Polls"
+    , "The Deadliest Attack by Hamas"
+    , "Pentagon Documents Leak"
+    , "George Santos' Expulsion from Congress"
+    , "U.S. and Germany Send Tanks to Ukraine"
+    , "Trump's Indictment"
+]
+# create a new source column 
+freq_df["article_source"] = np.select(source_conditions, source_choices, "ERROR")
+
+# create a new topic column
+freq_df["article_topic"] = np.select(topic_conditions, topic_choices, "ERROR")
+
+# drop the token columns that identify the topic/source, not part of actual article text
+freq_df.drop(columns=['abcarticle', 'bbcarticle', 'cnnarticle', 'foxarticle', 'nbcarticle',
+                        'nyparticle', 'nytarticle', 'wparticle', 'wsjarticle', 'affirmativearticle',
+                        'balloonarticle', 'bidenarticle', 'hamasarticle', 'pentagonarticle',
+                        'santosarticle', 'tanksarticle', 'trumparticle'], inplace=True)
+
+freq_df.head()
+
+# create dataframe with tf-idf values
+
+encoded_docs_tfidf = t.texts_to_matrix(article_docs, mode='tfidf')
+tfidf_df = pd.DataFrame(data = encoded_docs_tfidf[:, 1:], columns=words)
+# List of conditions
+source_conditions = [
+      tfidf_df['abcarticle'] != 0
+    , tfidf_df['bbcarticle'] != 0
+    , tfidf_df['cnnarticle'] != 0
+    , tfidf_df['foxarticle'] != 0
+    , tfidf_df['nbcarticle'] != 0
+    , tfidf_df['nyparticle'] != 0
+    , tfidf_df['nytarticle'] != 0
+    , tfidf_df['wparticle'] != 0
+    , tfidf_df['wsjarticle'] != 0
+]
+
+# List of values to return
+source_choices  = [
+      "ABC News"
+    , "BBC"
+    , "CNN"
+    , "Fox News"
+    , "NBC News"
+    , "New York Post"
+    , "The New York Times"
+    , "The Washington Post"
+    , "The Wall Street Journal"
+]
+
+# List of conditions
+topic_conditions = [
+      tfidf_df['affirmativearticle'] != 0
+    , tfidf_df['balloonarticle'] != 0
+    , tfidf_df['bidenarticle'] != 0
+    , tfidf_df['hamasarticle'] != 0
+    , tfidf_df['pentagonarticle'] != 0
+    , tfidf_df['santosarticle'] != 0
+    , tfidf_df['tanksarticle'] != 0
+    , tfidf_df['trumparticle'] != 0
+]
+# List of values to return
+topic_choices  = [
+      "Supreme Court Ruling on Affirmative Action"
+    , "Chinese Surveillance Balloon"
+    , "Biden's Low Approval Rates in Polls"
+    , "The Deadliest Attack by Hamas"
+    , "Pentagon Documents Leak"
+    , "George Santos' Expulsion from Congress"
+    , "U.S. and Germany Send Tanks to Ukraine"
+    , "Trump's Indictment"
+]
+# create a new source column 
+tfidf_df["article_source"] = np.select(source_conditions, source_choices, "ERROR")
+
+# create a new topic column
+tfidf_df["article_topic"] = np.select(topic_conditions, topic_choices, "ERROR")
+
+# drop the token columns that identify the topic/source, not part of actual article text
+tfidf_df.drop(columns=['abcarticle', 'bbcarticle', 'cnnarticle', 'foxarticle', 'nbcarticle',
+                        'nyparticle', 'nytarticle', 'wparticle', 'wsjarticle', 'affirmativearticle',
+                        'balloonarticle', 'bidenarticle', 'hamasarticle', 'pentagonarticle',
+                        'santosarticle', 'tanksarticle', 'trumparticle'], inplace=True)
+
+tfidf_df.head()
+```
 
 
-**Welcome** to *my* ~~super~~ SUPER awesome `blog` post!
-$$x^2 = 1$$
+
+
+# Exploratory Analysis
+
+We may be interested in clustering news sources together to see which ones are most similar to each other. This can be done in a dendrogram using the TF-IDF scores of their tokens. For this purpose, a new dataframe will have to be created with each row representing not just one article, but all articles from a single source in order to have one entry per source. 
+
+```{python}
+# create a list of strings where each string is all articles from one source (for dendogram)
+source_docs = []
+
+j = 0
+
+for i in range(9):
+    # looping through each article of each source, and only taking up until and not including second to last
+    # token, bc last two tokens represent the name of the source and topic of article
+    # for last article, we index up until and not including only the last token bc we don't want to include
+    # the topic of the article, but we do want to include the source name, which is the second to last token
+    source = " ".join(article_docs[j].split()[:-2]) + " " + " ".join(article_docs[j+1].split()[:-2]) + " "\
+        + " ".join(article_docs[j+2].split()[:-2]) + " " + " ".join(article_docs[j+3].split()[:-2]) + " "\
+        + " ".join(article_docs[j+4].split()[:-2]) + " " + " ".join(article_docs[j+5].split()[:-2]) + " "\
+        + " ".join(article_docs[j+6].split()[:-2]) + " " + " ".join(article_docs[j+7].split()[:-1])
+    source_docs.append(source)
+    j += 8
+
+source_docs
+
+# create a dataframe of token tf-idf's with each row representing all articles of one source
+
+# convert the list of article strings into a tf-idf-value dataframe
+t = Tokenizer()
+t.fit_on_texts(source_docs)
+print(t)
+encoded_source_docs = t.texts_to_matrix(source_docs, mode='tfidf')
+words = [x for x in t.word_index.keys()]
+tfidf_source_df = pd.DataFrame(data = encoded_source_docs[:, 1:], columns=words)
+# List of conditions
+source_conditions = [
+      tfidf_source_df['abcarticle'] != 0
+    , tfidf_source_df['bbcarticle'] != 0
+    , tfidf_source_df['cnnarticle'] != 0
+    , tfidf_source_df['foxarticle'] != 0
+    , tfidf_source_df['nbcarticle'] != 0
+    , tfidf_source_df['nyparticle'] != 0
+    , tfidf_source_df['nytarticle'] != 0
+    , tfidf_source_df['wparticle'] != 0
+    , tfidf_source_df['wsjarticle'] != 0
+]
+
+# List of values to return
+source_choices  = [
+      "ABC News"
+    , "BBC"
+    , "CNN"
+    , "Fox News"
+    , "NBC News"
+    , "New York Post"
+    , "The New York Times"
+    , "The Washington Post"
+    , "The Wall Street Journal"
+]
+
+# create a new source column 
+tfidf_source_df["article_source"] = np.select(source_conditions, source_choices, "ERROR")
+tfidf_source_df.set_index('article_source', inplace=True) # removes article_source column and makes it the index
+tfidf_source_df.drop(['abcarticle', 'bbcarticle', 'cnnarticle', 'foxarticle',
+                      'nbcarticle', 'nyparticle', 'nytarticle', 'wparticle',
+                      'wsjarticle'], axis=1, inplace=True)
+tfidf_source_df
+```
+
+
+```{python}
+#| label: fig-dendrogram
+#| fig-cap: "A dendrogram clustering sources together using TF-IDF scores of their tokens."
+
+# create dendrogram with complete linkage from tfidf scores df, whose rows each represent one source
+
+from scipy.cluster.hierarchy import dendrogram, linkage
+import matplotlib.pyplot as plt
+
+Z = linkage(tfidf_source_df, 'complete')
+fig = plt.figure(figsize=(30, 10))
+fig.suptitle("Complete Linkage", fontsize=24)
+plt.xlabel('Source', fontsize=20)
+plt.yticks(fontsize = 16) 
+dn = dendrogram(Z, labels=tfidf_source_df.index)
+plt.xticks(fontsize = 14)
+plt.show()
+```
 
 ## Quarto is cool
 
