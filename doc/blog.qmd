@@ -26,7 +26,7 @@ Everybody at some point has been at the center of a debate or has heard one abou
 
  Nine total news sites are studied for a mix of political affiliations, including CNN, The New York Times, The Washington Post, Fox News, New York Post, NBC News, The Wall Street Journal, BBC, and ABC News. Eight political events and topics from 2023 were chosen as the subjects for the articles to be studied for a higher potential for bias. For each topic, one article from each source was collected, making for a total of 72 articles. To ensure as little room for extraneous variables as possible, the articles for a particular topic across sources were chosen in a way so that they were published on the same day or as closely together in time as possible. This would mean that each source should have had the same information available when writing the article. The text from each article was collected through copying and pasting into its own text file. In addition, a string denoting each article's topic and source name was added to the end of each article's text file to be able to identify it. 
 
-# Preprocessing the Data
+# Data Preprocessing
 
 The text had to go through a lot of preparation before it could be ready for analyzing. Functions were created to make this process faster for each article. One function accesses a text file and returns a string of all the text in there. Another function cleans the text, which includes making all text lowercase, removing punctuation, removing stopwords (words like "and," "the," etc.), and stemming words, if desired. Stemming words keeps only the root form of a word, removing suffixes so that words like "jumps" and "jumping" are both reduced to "jump." This is desired for some parts of the analysis in this project, but not others. 
 
@@ -128,7 +128,6 @@ for filename in dir:
 # convert the list of article strings into a binary-value dataframe
 t = Tokenizer()
 t.fit_on_texts(article_docs)
-print(t)
 encoded_docs = t.texts_to_matrix(article_docs, mode='binary')
 words = [x for x in t.word_index.keys()]
 binary_df = pd.DataFrame(data = encoded_docs[:, 1:], columns=words)
@@ -357,7 +356,6 @@ source_docs
 # convert the list of article strings into a tf-idf-value dataframe
 t = Tokenizer()
 t.fit_on_texts(source_docs)
-print(t)
 encoded_source_docs = t.texts_to_matrix(source_docs, mode='tfidf')
 words = [x for x in t.word_index.keys()]
 tfidf_source_df = pd.DataFrame(data = encoded_source_docs[:, 1:], columns=words)
@@ -407,14 +405,243 @@ from scipy.cluster.hierarchy import dendrogram, linkage
 import matplotlib.pyplot as plt
 
 Z = linkage(tfidf_source_df, 'complete')
-fig = plt.figure(figsize=(30, 10))
-fig.suptitle("Complete Linkage", fontsize=24)
-plt.xlabel('Source', fontsize=20)
-plt.yticks(fontsize = 16) 
+fig = plt.figure(figsize=(14, 4))
+fig.suptitle("Complete Linkage", fontsize=14)
+plt.xlabel('Source', fontsize=6)
+plt.yticks(fontsize = 8) 
 dn = dendrogram(Z, labels=tfidf_source_df.index)
-plt.xticks(fontsize = 14)
+plt.xticks(fontsize = 8)
 plt.show()
 ```
+
+According to the dendrogram, ABC News and NBC News, as well as BBC and Fox News are the two pairs of sources that are most similar to one another. However, it's important to keep in mind that these results are based on only the small sample of articles used for each source and may not be generalizable to the sources as wholes. It is also important to keep in mind that the similarity of these sources is solely being based on the vocabulary usage of each source and not any other factors.  
+
+Another thing that could be interesting to look at are the wordclouds for each source. On a wordcloud, the bigger the word, the more frequently it appears within the text. Looking at these could also give a sense of the difference in vocabulary between each source. This is why topic coverage was kept the same across all sources, so that comparisons like these may be made to scope out differences in wording, given that the sources are each writing about the same topics.
+
+```{python}
+# create a function to be able to make a series of wordclouds, one for each source
+from wordcloud import WordCloud
+
+def create_wordcloud(text, title):
+    '''Given a string of all text and a string
+    for the title, creates a wordcloud.'''
+    plt.figure(figsize = (20,10))
+    wc = WordCloud(colormap = "YlOrRd", background_color='white', width=1600, height=800, max_font_size = 400).generate(text)
+    plt.title(title, fontsize=40)
+    plt.axis("off")
+    title_snake = title.lower().replace(" ", "_")
+    wc.to_file(f'wordcloud_{title_snake}.png')
+    #plt.savefig(f'wordcloud_{title_snake}.png', dpi = 1000)
+    plt.tight_layout(pad=0)
+    plt.imshow(wc)
+
+# loop through the list of strings, each one representing all articles' text from a given source, and create the wordcloud for it. 
+for i in range(len(source_docs)):
+    create_wordcloud(source_docs[i], tfidf_source_df.index[i])
+```
+
+The wordclouds for each source look mostly similar, with the most common word throughout them all being "said." This is unsurprising. The only exception here is Fox News, whose most frequently appearing word throughout all the articles is "Trump." Trump is a frequently appearing word for all sources because one of the topics chosen for the articles is explicitly about Trump. However, for Fox News, it is even more commonly used than the word "said." This is interesting, but this alone should not provoke any conclusions about this source being biased towards Trump, for example. It is important to remember that all this means is that "Trump" is the word that appeared the most frequently througout Fox News' articles, which could potentially be because Fox News had the longest article about Trump. Longer articles will certainly have a higher count of words overall. This can be examined further.
+
+```{python}
+# create a list of unstemmed article document texts
+# looping through all text files to apply preprocessing functions
+from plotnine import *
+
+article_docs_unstemmed = []
+dir = os.listdir('data/text/')
+dir.sort()
+for filename in dir:
+    filepath = os.path.join('data/text/', filename)
+    if filename.split(".")[-1] == "txt":
+        article_string = file_to_string(filepath)
+        new_string = clean_text(article_string, 0)
+        article_docs_unstemmed.append(new_string)
+
+# investigating why Fox News has Trump as most frequent word, to see if it's related to length of article 
+
+trump_article_lengths = []
+trump_word_counts = []
+
+i = 1
+for article in article_docs_unstemmed:
+    if i%8 == 0:
+        trump_count = 0
+        for word in article.split():
+            if word == "trump":
+                trump_count += 1
+        trump_word_counts.append(trump_count)
+        article_length = len(article.split())
+        trump_article_lengths.append(article_length)
+    i += 1
+
+# let's do the same for the word "biden" in the biden articles and see if there are outliers 
+
+biden_article_lengths = []
+biden_word_counts = []
+
+i = 1
+for article in article_docs_unstemmed:
+    if article.split()[-1] == "bidenarticle":
+        biden_count = 0
+        for word in article.split():
+            if word == "biden":
+                biden_count += 1
+        biden_word_counts.append(biden_count)
+        article_length = len(article.split())
+        biden_article_lengths.append(article_length)
+    i += 1
+
+# create a df with sources, their trump article lengths, and the frequency of the word "trump"
+
+trump_words = pd.DataFrame(columns=['source', 'article_length', 'trump_word_count'])
+trump_words['source'] = tfidf_source_df.index
+trump_words['article_length'] = trump_article_lengths
+trump_words['trump_word_count'] = trump_word_counts
+trump_words
+
+biden_words = pd.DataFrame(columns=['source', 'article_length', 'biden_word_count'])
+biden_words['source'] = tfidf_source_df.index
+biden_words['article_length'] = biden_article_lengths
+biden_words['biden_word_count'] = biden_word_counts
+
+# create scatterplot of length of trump article vs frequency of the word "Trump"
+
+display(
+ggplot(data=trump_words,
+       mapping=aes(x='article_length', y='trump_word_count', color='source'))
+       + geom_point(show_legend=True)
+       + geom_smooth(method = "lm", se=False, color="darkgrey")
+       + labs(title="Trump Article Length vs. Mentions of Trump",
+              x='# of Words in Article',
+              y='# of Times "Trump" Mentioned')
+)
+
+# create scatterplot of length of biden article vs frequency of the word "Biden"
+
+(
+ggplot(data=biden_words,
+       mapping=aes(x='article_length', y='biden_word_count', color='source'))
+       + geom_point(show_legend=True)
+       + geom_smooth(method = "lm", se=False, color="darkgrey")
+       + labs(title="Biden Article Length vs. Mentions of Biden",
+              x='# of Words in Article',
+              y='# of Times "Biden" Mentioned')
+)
+```
+
+Above we used scatterplots to see how the length of the Trump articles are related to the frequency of the word "Trump" within them, by source. We do, in fact, see that the point for Fox News is an outlier. Given its article length, it does mention Trump a lot more frequently than the Trump articles from other sources. Out of curiosity, we look at the same visualization for the word "Biden" in the Biden articles. Interestingly, Fox News again appears to be an outlier. Given its article length, it also mentions Biden a lot more frequently than the remaining sources. Now, it is not as easy to make assumptions about the partiality of Fox News just based on these word frequencies. They could be more telling of the writing styles of each source, or it could also merely be a result of using such a small sample size of articles.
+
+# Sentiment Analysis
+
+Next, the connotation of each article and source overall is studied. The TextBlob package in Python provides polarity and subjectivity scores for any text string. A polarity score, on a scale of [-1, 1], tells if the text has a positive or negative connotation to it. Subjectivity scores, on a scale of [0, 1] tells how opinionated or subjective a text sounds as opposed to being factual. The higher the score, the more subjective the text is. A dataframe is created that displays the polarity and subjectivity scores of each article, with various other columns being created that help place each article's score in the context of the entire corpus of documents and that will be used in following visualizations.
+
+```{python}
+# calculate polarity and subjectivity scores, create dataframe
+from textblob import TextBlob
+
+scores_df = pd.DataFrame({'source':tfidf_df['article_source'], 'topic':tfidf_df['article_topic']})
+
+scores_df['source'] = np.where(scores_df['source'] == "The New York Times", "New York Times", scores_df['source'])
+scores_df['source'] = np.where(scores_df['source'] == "The Washington Post", "Washington Post", scores_df['source'])
+scores_df['source'] = np.where(scores_df['source'] == "The Wall Street Journal", "Wall Street Journal", scores_df['source'])
+
+polarity_scores = []
+subjectivity_scores = []
+
+for article in article_docs_unstemmed:
+    polarity_scores.append(round(TextBlob(" ".join(article.split()[:-2])).sentiment.polarity, 2))
+    subjectivity_scores.append(round(TextBlob(" ".join(article.split()[:-2])).sentiment.subjectivity, 2))
+
+scores_df['polarity_score'] = polarity_scores
+scores_df['subjectivity_score'] = subjectivity_scores
+
+average_topic_polarity_scores = []
+average_source_polarity_scores = []
+
+for topic in scores_df['topic'].value_counts().index:
+    mean_score = round(scores_df[scores_df['topic'] == topic]['polarity_score'].mean(), 2)
+    average_topic_polarity_scores.append(mean_score)
+
+for source in scores_df['source'].value_counts().index:
+    mean_score = round(scores_df[scores_df['source'] == source]['polarity_score'].mean(), 2)
+    for i in range(8):
+        average_source_polarity_scores.append(mean_score)
+
+scores_df['average_polarity_for_topic'] = average_topic_polarity_scores * 9
+scores_df['average_polarity_for_source'] = average_source_polarity_scores
+
+average_topic_subjectivity_scores = []
+average_source_subjectivity_scores = []
+
+for topic in scores_df['topic'].value_counts().index:
+    mean_score = round(scores_df[scores_df['topic'] == topic]['subjectivity_score'].mean(), 2)
+    average_topic_subjectivity_scores.append(mean_score)
+
+for source in scores_df['source'].value_counts().index:
+    mean_score = round(scores_df[scores_df['source'] == source]['subjectivity_score'].mean(), 2)
+    for i in range(8):
+        average_source_subjectivity_scores.append(mean_score)
+
+scores_df['average_subjectivity_for_topic'] = average_topic_subjectivity_scores * 9
+scores_df['average_subjectivity_for_source'] = average_source_subjectivity_scores
+
+scores_df['polarity_diff_from_topic_mean'] = scores_df['polarity_score'] - scores_df['average_polarity_for_topic']
+scores_df['subjectivity_diff_from_topic_mean'] = scores_df['subjectivity_score'] - scores_df['average_subjectivity_for_topic']
+scores_df['polarity_diff_from_source_mean'] = scores_df['polarity_score'] - scores_df['average_polarity_for_source']
+scores_df['subjectivity_diff_from_source_mean'] = scores_df['subjectivity_score'] - scores_df['average_subjectivity_for_source']
+
+sources_polarity_dev = []
+
+for source in scores_df['source'].value_counts().index:
+    total_dev = scores_df[scores_df['source'] == source]['polarity_diff_from_topic_mean'].sum()
+    for i in range(8):
+        sources_polarity_dev.append(total_dev/8)
+
+sources_subjectivity_dev = []
+
+for source in scores_df['source'].value_counts().index:
+    total_dev = scores_df[scores_df['source'] == source]['subjectivity_diff_from_topic_mean'].sum()
+    for i in range(8):
+        sources_subjectivity_dev.append(total_dev/8)
+
+scores_df['average_source_polarity_deviation_from_topic_mean'] = sources_polarity_dev
+scores_df['average_source_subjectivity_deviation_from_topic_mean'] = sources_subjectivity_dev
+
+scores_df['polarity_sign'] = np.where(scores_df['polarity_score'] > 0, 'pos', 'neg')
+scores_df['polarity_magnitude'] = abs(scores_df['polarity_score'])
+
+scores_df.head(5)
+```
+
+Since the documentation of the calculation of these scores is limited, one may wonder if they are somehow related. That is, are polarity scores related to subjectivity scores in some way? A scatterplot is created to see if a higher polarity score magnitude (absolute value) may mean a higher subjectivity score as well.
+
+```{python}
+# to better understand subjectivity scores: are polarity scores and subjectivity scores correlated?
+# this may suggest that polarity score is used in the calculation of a subjectivity score
+
+(
+ggplot(scores_df, aes(x="polarity_magnitude", y="subjectivity_score", color='topic'))
++ geom_point()
++ labs(x="Absolute Value of Polarity Score",
+       y='Subjectivity Score',
+       title='Are Polarity Score Magnitudes Correlated with Subjectivity Scores?')
+)
+```
+
+There does not appear to be a linear or any other sort of relationship between the polarity and subjectivity scores of the articles used in this project. However, the graph does show almost a cluster of points of the same color, telling that the articles about the Supreme Court ruling against affirmative action tend to have stronger polarity scores. The same graph may be visualized colored by source instead, to see if any clusters of sources are observed.
+
+
+```{python}
+(
+ggplot(scores_df, aes(x="polarity_magnitude", y="subjectivity_score", color='source'))
++ geom_point()
++ labs(x="Absolute Value of Polarity Score",
+       y='Subjectivity Score',
+       title='Are Polarity Score Magnitudes Correlated with Subjectivity Scores?')
+)
+```
+
+
 
 ## Quarto is cool
 
