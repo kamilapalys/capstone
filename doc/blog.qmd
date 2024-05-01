@@ -27,6 +27,25 @@ Everybody at some point has been at the center of a debate or has heard one abou
 
  Nine total news sites are studied for a mix of political affiliations, including CNN, The New York Times, The Washington Post, Fox News, New York Post, NBC News, The Wall Street Journal, BBC, and ABC News. Eight political events and topics from 2023 were chosen as the subjects for the articles to be studied for a higher potential for bias. For each topic, one article from each source was collected, making for a total of 72 articles. To ensure as little room for extraneous variables as possible, the articles for a particular topic across sources were chosen in a way so that they were published on the same day or as closely together in time as possible. This would mean that each source should have had the same information available when writing the article. The text from each article was collected through copying and pasting into its own text file. In addition, a string denoting each article's topic and source name was added to the end of each article's text file to be able to identify it. 
 
+::: {.callout-note collapse="true"}
+## Topics chosen for article selection
+* Indictment of Trump
+
+* Supreme Court's ruling against affirmative action
+
+* Biden's low approval rates in polls
+
+* Deadliest attack by Hamas to date
+
+* Chinese surveillance balloon
+
+* Pentagon document leaks
+
+* Sending tanks to Ukraine
+
+* Expulsion of George Santos
+:::
+
 # Data Preprocessing
 
 The text had to go through a lot of preparation before it could be ready for analyzing. Functions were created to make this process faster for each article. One function accesses a text file and returns a string of all the text in there. Another function cleans the text, which includes making all text lowercase, removing punctuation, removing stopwords (words like "and," "the," etc.), and stemming words, if desired. Stemming words keeps only the root form of a word, removing suffixes so that words like "jumps" and "jumping" are both reduced to "jump." This is desired for some parts of the analysis in this project, but not others. 
@@ -95,10 +114,11 @@ def clean_text(text, stem):
 
 # Dataframes
 
-All of the article text collected is then transformed into multiple dataframe versions. One way of representing textual data within a dataframe is with binary values. In this case, each column is a token, or a word, that appears in any of the documents (articles) collected. Each row represents one document. The values are either a 0 or 1, denoting whether or not the token appears within the article. Another representation as a dataframe has the values of the dataframe as the frequencies of each token within an article. Finally, another dataframe is created with the Term Frequency-Inverse Document Frequency (TF-IDF) scores of the tokens within an article as the values. Some of these dataframes may work better than others when it comes to the predictive modeling portion of the project and revealing patterns within the text of a news source. 
+All of the article text collected is then transformed into multiple dataframe versions. One way of representing textual data within a dataframe is with binary values. In this case, each column is a token, or a word, that appears in any of the documents (articles) collected. Each row represents one document. The values are either a 0 or 1, denoting whether or not the token appears within the article. Another representation as a dataframe has the values of the dataframe as the frequencies of each token within an article. Finally, another dataframe is created with the Term Frequency-Inverse Document Frequency (TF-IDF) scores of the tokens within an article as the values. Some of these dataframes may work better than others when it comes to the predictive modeling portion of the project and revealing patterns within the text of a news source. An example dataframe is shown below, with the TF-IDF scores of each stemmed token shown for the first five articles (rows).
 
 ```{python, include=False}
 import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'
 from os import listdir
 
 # we want to be in the capstone folder, not in the doc folder
@@ -398,7 +418,7 @@ tfidf_source_df.set_index('article_source', inplace=True) # removes article_sour
 tfidf_source_df.drop(['abcarticle', 'bbcarticle', 'cnnarticle', 'foxarticle',
                       'nbcarticle', 'nyparticle', 'nytarticle', 'wparticle',
                       'wsjarticle'], axis=1, inplace=True)
-tfidf_source_df
+#tfidf_source_df
 ```
 
 
@@ -536,7 +556,7 @@ ggplot(data=biden_words,
 )
 ```
 
-Above we used scatterplots to see how the length of the Trump articles are related to the frequency of the word "Trump" within them, by source. We do, in fact, see that the point for Fox News is an outlier. Given its article length, it does mention Trump a lot more frequently than the Trump articles from other sources. Out of curiosity, we look at the same visualization for the word "Biden" in the Biden articles. Interestingly, Fox News again appears to be an outlier. Given its article length, it also mentions Biden a lot more frequently than the remaining sources. Now, it is not as easy to make assumptions about the partiality of Fox News just based on these word frequencies. They could be more telling of the writing styles of each source, or it could also merely be a result of using such a small sample size of articles.
+Above we used scatterplots to see how the length of the Trump articles are related to the frequency of the word "Trump" within them, by source. We do, in fact, see that the point for Fox News, corresponding to the article @foxtrump, is an outlier. Given its article length, it does mention Trump a lot more frequently than the Trump articles from other sources. Out of curiosity, we look at the same visualization for the word "Biden" in the Biden articles. Interestingly, Fox News again appears to be an outlier (see @foxbiden). Given its article length, it also mentions Biden a lot more frequently than the remaining sources. Now, it is not as easy to make assumptions about the partiality of Fox News just based on these word frequencies. They could be more telling of the writing styles of each source, or it could also merely be a result of using such a small sample size of articles.
 
 # Sentiment Analysis
 
@@ -790,6 +810,8 @@ topic_list = topic_choices  = [
     , "Trump's Indictment"
 ]
 
+average_accuracies = []
+
 def naive_bayes_cf(df, value_type):
     '''Takes in a dataframe of tokens and the desired values 
     to train the model on (i.e. tfidf scores, frequencies)
@@ -855,12 +877,20 @@ def naive_bayes_cf(df, value_type):
             #print("F1 score of Multinomial Naive Bayes Model:", f1)
             #print("\n\n")
 
-    print(f"Minimum Accuracy Score of any Multinomial Naive Bayes Model using {value_type}:",
-        min(accuracy_list))
-    print(f"Maximum Accuracy Score of any Multinomial Naive Bayes Model using {value_type}:",
-        max(accuracy_list))
-    print(f"Maximum F1 Score of any Multinomial Naive Bayes Model using {value_type}:",
-        max(f1_score_list))
+    cum_acc = 0
+
+    for acc in accuracy_list:
+        cum_acc += acc
+
+    average_accuracies.append((cum_acc/len(accuracy_list), value_type))
+
+    # uncomment lines below if interested in displaying min/max accuracy scores for the models trained within the function
+    #print(f"Minimum Accuracy Score of any Multinomial Naive Bayes Model using {value_type}:",
+    #    min(accuracy_list))
+    #print(f"Maximum Accuracy Score of any Multinomial Naive Bayes Model using {value_type}:",
+    #    max(accuracy_list))
+    #print(f"Maximum F1 Score of any Multinomial Naive Bayes Model using {value_type}:",
+    #    max(f1_score_list))
 
 dfs = [(tfidf_df, "TFIDF Score"), (binary_df, "Binary Values"), (freq_df, "Frequencies")]
 
@@ -868,7 +898,12 @@ for df in dfs:
     naive_bayes_cf(df[0], df[1])
 ```
 
-For the series of Naive Bayes models created, the maximum accuracy score reached for any model is 44%. This was for a model trained on TF-IDF scores. This accuracy does not seem very high. Even the best of these models' predictions are wrong more often than they are right. However, since there are nine possible predictions that could be made (nine different sources), a random guess would expect to result in a 11% accuracy rate. This happens to also be the minimum accuracy score of any of these models. Therefore, these classifiers are just as good or better than guessing which source an article comes from, simply given its text. 
+```{python}
+for entry in average_accuracies:
+  print(f'Average accuracy for Naive Bayes models that were trained on {entry[1]}:', round(entry[0], 2))
+```
+
+For the series of Naive Bayes models created, the maximum accuracy score reached for any model is 44%. This was for a model trained on TF-IDF scores. This accuracy does not seem very high. Even the best of these models' predictions are wrong more often than they are right. However, since there are nine possible predictions that could be made (nine different sources), a random guess would expect to result in a 11% accuracy rate on average. This happens to also be the minimum accuracy score of any of these models. Therefore, all of these classifiers are still just as good or better than guessing which source an article comes from, simply given its text. 
 
 The same will be repeated with Random Forest models. In addition to using various holdout topic sets and dataframes to train and test these models on, a couple parameters will also be tested to see which ones result in the best performing model. 
 
@@ -876,9 +911,10 @@ The same will be repeated with Random Forest models. In addition to using variou
 from sklearn.ensemble import RandomForestClassifier
 
 best_rf_params = {}
-df_list = []
 best_model_pred_vs_actuals = pd.DataFrame()
 average_accuracies = []
+best_accuracies_by_cf['Random Forest'] = 0
+
 
 def random_forest_cf(df, value_type, n, crit):
     '''Takes in a dataframe of tokens and the desired values 
@@ -891,13 +927,12 @@ def random_forest_cf(df, value_type, n, crit):
 
     accuracy_list = []
     f1_score_list = []
-    best_accuracies_by_cf['Random Forest'] = 0
 
     for i in range(len(topic_list)):
         for j in range(i+1, len(topic_list)):
-            #print("Holdout article topics: ")
-            #print(topic_list[i])
-            #print(topic_list[j])
+            # print("Holdout article topics: ")
+            # print(topic_list[i])
+            # print(topic_list[j])
             X_train_df = df[(df['article_topic'] != topic_list[i]) & 
                     (df['article_topic'] != topic_list[j])].iloc[:, :-2]
             X_test_df = df[(df['article_topic'] == topic_list[i]) | 
@@ -959,13 +994,14 @@ def random_forest_cf(df, value_type, n, crit):
             #print("F1 score of Random Forest Model:", f1)
             #print("\n\n")
 
-    print(f"Minimum Accuracy Score of any Random Forest Model with {n} n_estimators, {crit} criterion, using {value_type}:",
-          min(accuracy_list))
-    print(f"Maximum Accuracy Score of any Random Forest Model with {n} n_estimators, {crit} criterion, using {value_type}:",
-          max(accuracy_list))
-    #print(f"Maximum F1 Score of any Random Forest Model with {n} n_estimators, {crit} criterion, using {value_type}:",
-          #max(f1_score_list))
-    print("\n")
+    # uncomment lines below if interested in displaying min/max accuracies of models trained within this function.
+    # print(f"Minimum Accuracy Score of any Random Forest Model with {n} n_estimators, {crit} criterion, using {value_type}:",
+    #      min(accuracy_list))
+    # print(f"Maximum Accuracy Score of any Random Forest Model with {n} n_estimators, {crit} criterion, using {value_type}:",
+    #   max(accuracy_list))
+    # print(f"Maximum F1 Score of any Random Forest Model with {n} n_estimators, {crit} criterion, using {value_type}:",
+    #       max(f1_score_list))
+    # print("\n")
 
 crits = ['gini', 'entropy']
 n_ests = [10, 100, 200]
@@ -977,9 +1013,83 @@ for df in dfs:
 
 ```
 
-The best random forest classifier upon one iteration of this code had an accuracy score of 78%. This was using the dataframe with binary values for tokens, 200 n_estimators, and gini criterion. Using these same parameters and the same dataframe, the worst of these models (with a different holdout set) had an accuracy score of 22%. Of course, there is an inherently random element for this type of classifier, so results may differ each time. However, many of the random forest models trained and tested thusfar have been able to reach a similar accuracy score. This can be considered a very good accuracy score for our purposes! Using the right parameters and training/testing sets, we could correctly predict the source of an article three out of every four times. As seen, however, even using the best parameters in the random forest models, the accuracy can wildly differ (22-78%) depending on which topics were used for training and testing. It is reasonable to assume that this could be remedied with a much larger sample of articles in the future, which could provide a rich set for both training and testing data. 
+```{python}
+for entry in average_accuracies:
+  print(f'Average accuracy for Random Forest models trained on {entry[1]}, using {entry[2]} n_estimators, and {entry[3]} criterion:', entry[0])
 
-::: {.callout-caution collapse="true"}
+# if interested in displaying best parameters for random forest models, uncomment line below
+# best_rf_params
+```
+
+
+The best random forest classifier had an accuracy score of 78%. This was using the dataframe with binary values for tokens, 200 n_estimators, and gini criterion. Using these same parameters and the same dataframe, the worst of these models (with a different holdout set) had an accuracy score of 22%. Still, a lot of the models' results can be considered very good for our purposes! Using the right parameters and training/testing sets, we could correctly predict the source of an article about three out of every four times. As seen, however, even using the best parameters in the random forest models, the accuracy can wildly differ (22-78%) depending on which topics were used for training and testing. This is why the average accuracies are also printed above for each combination of dataframe used and n_estimators and criterion parameters. It is reasonable to assume that this highly varied accuracy score that depends on the training/testing split could be remedied with a much larger sample of articles in the future, which could provide a rich set for both training and testing data. 
+
+```{python}
+# create confusion matrix of model with best parameters
+
+X_train_df = binary_df[(binary_df['article_topic'] != 'The Deadliest Attack by Hamas') & 
+        (binary_df['article_topic'] != 'Pentagon Documents Leak')].iloc[:, :-2]
+X_test_df = binary_df[(binary_df['article_topic'] == 'The Deadliest Attack by Hamas') | 
+        (binary_df['article_topic'] == 'Pentagon Documents Leak')].iloc[:, :-2]
+y_train_df = binary_df[(binary_df['article_topic'] != 'The Deadliest Attack by Hamas') & 
+        (binary_df['article_topic'] != 'Pentagon Documents Leak')]['article_source']
+y_test_df = binary_df[(binary_df['article_topic'] == 'The Deadliest Attack by Hamas') | 
+        (binary_df['article_topic'] == 'Pentagon Documents Leak')]['article_source']
+X_train = X_train_df.to_numpy()
+X_test = X_test_df.to_numpy()
+y_train = y_train_df.to_numpy()
+y_test = y_test_df.to_numpy()
+
+rf_model = RandomForestClassifier(n_estimators = 200, criterion="gini", random_state=42)
+rf_model.fit(X_train, y_train)
+y_score = rf_model.predict_proba(X_test)
+
+predictions_array = rf_model.predict(X_test)
+
+prediction_list = []
+for pred in predictions_array:
+        prediction_list.append(pred)
+
+actuals_list = []
+
+for source in y_test:
+        actuals_list.append(source)
+
+preds_actuals_df = pd.DataFrame({'Actual':actuals_list, 'Predicted':prediction_list})
+
+accuracy = accuracy_score(predictions_array, y_test)
+f1 = f1_score(predictions_array, y_test, average="weighted")
+
+# confusion matrix code 
+
+labels = ["ABC News", "BBC", "CNN", "Fox News", "NBC News", "New York Post",
+          "The New York Times", "The Washington Post", "The Wall Street Journal"]
+
+labels_short = ["ABC", "BBC", "CNN", "Fox", "NBC", "NYP",
+          "NYT", "WP", "WSJ"]
+
+cm = confusion_matrix(y_test, predictions_array, labels=labels)
+#fig, ax = plt.subplots(figsize=(10, 10))
+disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=labels_short)
+disp.plot()
+fig = disp.ax_.get_figure() 
+fig.set_figwidth(5)
+fig.set_figheight(5)
+```
+
+We may also look at the confusion matrix above that was generated from the results of a Random Forest model with the best parameters that we previously determined. It shows us which sources the classifier predicted for an article, versus what the correct source actually was. Most of the time, the predicted and actual source were the same. We can see, for example, that it twice incorrectly predicted Fox News, when the true sources were The New York Times and New York Post. Neither of the New York Post articles were correctly classified as such. Unfortunately, it is difficult to infer the reasoning of such performance, especially with a black box model like Random Forest which does not provide interpretable reasoning behind prediction decisions. 
+
+# Conclusions
+
+To summarize what was revealed in this project, here are a few takeaways:
+
+* Fox News uniquely mentions Trump and Biden much more frequently than other news sources, given its article lengths.
+
+* The New York Times articles in the sample have the strongest (negative) tone.
+
+* With a Random Forest model, we were able to correctly predict the source of an article up to 78% of the time, leading us to conclude that the wording between news sources is, in fact, distinct. 
+
+::: {.callout-note collapse="true"}
 ## Articles used in project
 @abcaffirmative
 @abcballoon
