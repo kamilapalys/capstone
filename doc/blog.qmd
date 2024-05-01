@@ -1015,7 +1015,7 @@ for df in dfs:
 
 ```{python}
 for entry in average_accuracies:
-  print(f'Average accuracy for Random Forest models trained on {entry[1]}, using {entry[2]} n_estimators, and {entry[3]} criterion:', entry[0])
+  print(f'Average accuracy for Random Forest models trained on {entry[1]}, using {entry[2]} n_estimators, and {entry[3]} criterion:', round(entry[0], 2))
 
 # if interested in displaying best parameters for random forest models, uncomment line below
 # best_rf_params
