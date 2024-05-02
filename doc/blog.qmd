@@ -21,11 +21,11 @@ jupyter: python3
 
 # Introduction
 
-Everybody at some point has been at the center of a debate or has heard one about which news sources are trustworthy or not. These opinions are usually associated with the identification of a political party. A lot of the times, these opinions are largely subjective, but can they be confirmed or changed with a more technical analysis on news sources? What can we tell about each news source just based on the words that they use? This project takes a closer look at the language that various news sources use and examines if these news sources really report on the same events in a different manner. This will be done mainly through sentiment analysis and finally, creating classifiers to predict the source of a given article. 
+Everybody at some point has been at the center of a debate or has heard one about which news sources are trustworthy or not. These opinions are usually associated with the identification of a political party. A lot of the times, these opinions are largely subjective, but can they be confirmed or changed with a more technical analysis on news sources? What can we tell about each news source just based on their word choice? This project takes a closer look at the language that various news sources use and examines if these news sources really report on the same events in a different manner. This will be done through sentiment analysis and finally, creating classifiers to see if we can predict the source of a given article. 
 
 # Data Collection
 
- Nine total news sites are studied for a mix of political affiliations, including CNN, The New York Times, The Washington Post, Fox News, New York Post, NBC News, The Wall Street Journal, BBC, and ABC News. Eight political events and topics from 2023 were chosen as the subjects for the articles to be studied for a higher potential for bias. For each topic, one article from each source was collected, making for a total of 72 articles. To ensure as little room for extraneous variables as possible, the articles for a particular topic across sources were chosen in a way so that they were published on the same day or as closely together in time as possible. This would mean that each source should have had the same information available when writing the article. The text from each article was collected through copying and pasting into its own text file. In addition, a string denoting each article's topic and source name was added to the end of each article's text file to be able to identify it. 
+ Nine total news sites are studied for a mix of political affiliations, including CNN, The New York Times, The Washington Post, Fox News, New York Post, NBC News, The Wall Street Journal, BBC, and ABC News. Eight political events and topics from 2023 were chosen as the subjects for the articles to be studied for a higher potential for bias. For each topic, one article from each source was collected, making for a total of 72 articles. To ensure as little room for extraneous variables as possible, the articles for a particular topic across sources were chosen in a way so that they were published on the same day or as closely together in time as possible. This would mean that each source should have had the same information available to them when writing the article. The text from each article was collected through copying and pasting into its own text file. In addition, a string denoting each article's topic and source name was added to the end of each article's text file to be able to identify it. 
 
 ::: {.callout-note collapse="true"}
 ## Topics chosen for article selection
@@ -48,7 +48,7 @@ Everybody at some point has been at the center of a debate or has heard one abou
 
 # Data Preprocessing
 
-The text had to go through a lot of preparation before it could be ready for analyzing. Functions were created to make this process faster for each article. One function accesses a text file and returns a string of all the text in there. Another function cleans the text, which includes making all text lowercase, removing punctuation, removing stopwords (words like "and," "the," etc.), and stemming words, if desired. Stemming words keeps only the root form of a word, removing suffixes so that words like "jumps" and "jumping" are both reduced to "jump." This is desired for some parts of the analysis in this project, but not others. 
+The text had to go through a lot of preparation before it could be ready for analyzing. Functions were created to make this process faster for each article. One function accesses an article's text file and returns a string of all the text in there. Another function cleans the text, which includes making all text lowercase, removing punctuation, removing stopwords (words like "and," "the," etc.), and stemming words, if desired. Stemming words keeps only the root form of a word, removing suffixes so that words like "jumps" and "jumping" are both reduced to "jump." This is desired for some parts of the analysis in this project, but not others. 
 
 ```{python}
 # don't show future warnings
@@ -114,7 +114,7 @@ def clean_text(text, stem):
 
 # Dataframes
 
-All of the article text collected is then transformed into multiple dataframe versions. One way of representing textual data within a dataframe is with binary values. In this case, each column is a token, or a word, that appears in any of the documents (articles) collected. Each row represents one document. The values are either a 0 or 1, denoting whether or not the token appears within the article. Another representation as a dataframe has the values of the dataframe as the frequencies of each token within an article. Finally, another dataframe is created with the Term Frequency-Inverse Document Frequency (TF-IDF) scores of the tokens within an article as the values. Some of these dataframes may work better than others when it comes to the predictive modeling portion of the project and revealing patterns within the text of a news source. An example dataframe is shown below, with the TF-IDF scores of each stemmed token shown for the first five articles (rows).
+All of the article text collected is then transformed into multiple dataframe versions. One way of representing textual data within a dataframe is with binary values. In this case, each column is a token, or a word, that appears in any of the documents (articles) collected. Each row represents one document. The values are either a 0 or 1, denoting whether or not the token appears within the article. Another  dataframe representation has the values instead be the frequencies of each token within an article. Finally, a third dataframe is created with the Term Frequency-Inverse Document Frequency (TF-IDF) scores of the tokens within an article as the values. A TF-IDF score signifies the importance and uniqueness of a word within an article, as it compares to the remaining documents. Some of these dataframes may work better than others when it comes to the predictive modeling portion of the project and revealing patterns within the text of a news source. An example dataframe is shown below, with the TF-IDF scores of each stemmed token shown for the first five articles (rows).
 
 ```{python, include=False}
 import os
@@ -352,11 +352,9 @@ tfidf_df.head()
 ```
 
 
-
-
 # Exploratory Analysis
 
-We may be interested in clustering news sources together to see which ones are most similar to each other. This can be done in a dendrogram using the TF-IDF scores of their tokens. For this purpose, a new dataframe will have to be created with each row representing not just one article, but all articles from a single source in order to have one entry per source. 
+To begin exploring this data, we may be interested in clustering news sources together to see which ones are most similar to each other. This can be done in a dendrogram using the TF-IDF scores of their tokens, for example. For this purpose, a new dataframe will have to be created with each row representing not just one article, but all articles from a single source, since we are clustering entire sources and not individual articles. 
 
 ```{python}
 # create a list of strings where each string is all articles from one source (for dendogram)
@@ -414,11 +412,13 @@ source_choices  = [
 
 # create a new source column 
 tfidf_source_df["article_source"] = np.select(source_conditions, source_choices, "ERROR")
-tfidf_source_df.set_index('article_source', inplace=True) # removes article_source column and makes it the index
+# remove article_source column and make it the index
+tfidf_source_df.set_index('article_source', inplace=True) 
+# drop the columns for the tokens that were used to identify the articles
 tfidf_source_df.drop(['abcarticle', 'bbcarticle', 'cnnarticle', 'foxarticle',
                       'nbcarticle', 'nyparticle', 'nytarticle', 'wparticle',
                       'wsjarticle'], axis=1, inplace=True)
-#tfidf_source_df
+# tfidf_source_df
 ```
 
 
@@ -441,9 +441,9 @@ plt.xticks(fontsize = 8)
 plt.show()
 ```
 
-According to the dendrogram, ABC News and NBC News, as well as BBC and Fox News are the two pairs of sources that are most similar to one another. However, it's important to keep in mind that these results are based on only the small sample of articles used for each source and may not be generalizable to the sources as wholes. It is also important to keep in mind that the similarity of these sources is solely being based on the vocabulary usage of each source and not any other factors.  
+According to the dendrogram @fig-dendrogram, ABC News and NBC News as well as BBC and Fox News are the two pairs of sources that are most similar to one another. Again, the articles were compared by looking at how similar their TF-IDF scores were for the same tokens. We also see that there aren't two distinct groups of sources clustered together, while we may have expected sources to be clustered together based on their political affiliation. However, it's important to keep in mind that these results are based on only the small sample of articles used for each source and may not be generalizable to the sources as wholes. It is also important to keep in mind that the similarity of these sources is solely being based on the vocabulary usage of each source and not any other factors.  
 
-Another thing that could be interesting to look at are the wordclouds for each source. On a wordcloud, the bigger the word, the more frequently it appears within the text. Looking at these could also give a sense of the difference in vocabulary between each source. This is why topic coverage was kept the same across all sources, so that comparisons like these may be made to scope out differences in wording, given that the sources are each writing about the same topics.
+Another thing that could be interesting to look at are the wordclouds for each source. On a wordcloud, the bigger the word is, the more frequently it appeared within the text. Looking at these could give a sense of the difference in vocabulary between each source. This is why topic coverage was kept the same across all sources, so that comparisons like these may be made to scope out differences in wording, given that the sources are each writing about the same topics.
 
 ```{python}
 # create a function to be able to make a series of wordclouds, one for each source
@@ -458,7 +458,6 @@ def create_wordcloud(text, title):
     plt.axis("off")
     title_snake = title.lower().replace(" ", "_")
     wc.to_file(f'wordcloud_{title_snake}.png')
-    #plt.savefig(f'wordcloud_{title_snake}.png', dpi = 1000)
     plt.tight_layout(pad=0)
     plt.imshow(wc)
 
@@ -467,7 +466,12 @@ for i in range(len(source_docs)):
     create_wordcloud(source_docs[i], tfidf_source_df.index[i])
 ```
 
-The wordclouds for each source look mostly similar, with the most common word throughout them all being "said." This is unsurprising. The only exception here is Fox News, whose most frequently appearing word throughout all the articles is "Trump." Trump is a frequently appearing word for all sources because one of the topics chosen for the articles is explicitly about Trump. However, for Fox News, it is even more commonly used than the word "said." This is interesting, but this alone should not provoke any conclusions about this source being biased towards Trump, for example. It is important to remember that all this means is that "Trump" is the word that appeared the most frequently througout Fox News' articles, which could potentially be because Fox News had the longest article about Trump. Longer articles will certainly have a higher count of words overall. This can be examined further.
+::: {.callout-note collapse="true"}
+## Looking at the wordclouds
+The words are not misspelled. Stemmed words were used for the creation of the wordclouds to avoid repetition of the same commonly appearing word in various tenses.
+:::
+
+The wordclouds for each source look mostly similar, with the most common word throughout them all being "said." This is unsurprising. The only exception here is Fox News, whose most frequently appearing word throughout all the articles is "Trump." Trump is a frequently appearing word for all sources because one of the topics chosen for the articles is explicitly about Trump. However, for Fox News, it is even more commonly used than the word "said." This is interesting, but this alone should not provoke any conclusions about this source being biased towards Trump, for example. All that this means is that "Trump" is the word that appeared the most frequently throughout Fox News' articles, which could potentially be because Fox News had the longest article about Trump. Longer articles will certainly have a higher count of words overall. This can be investigated further.
 
 ```{python}
 # create a list of unstemmed article document texts
@@ -788,6 +792,8 @@ From looking at outlier polarity scores, the articles about the Supreme Court ru
 
 # Predictive Modeling
 
+## Naive Bayes
+
 Now, for the main part of this project, a few different classifiers will be used to attempt to predict the source of a given article. If this can be done with high accuracy, it will show that the wording alone of the studied sources is distinct enough to be an identifying factor. First, Naive Bayes classifiers will be trained and tested on the articles included. Six topics will be used for training, and two for testing. As many classifiers will be created as needed (28) in order to use every possible split of topics for the training and testing sets. In addition, this process will be repeated for each of the three dataframes created (using binary values, frequencies, and TF-IDF scores of tokens) for a total of 84 Naive Bayes classifiers. This means that the models will be trained on the tokens (words) that appear in each model and their values (one of the three possible mentioned).
 
 ```{python}
@@ -825,7 +831,7 @@ def naive_bayes_cf(df, value_type):
 
     for i in range(len(topic_list)):
         for j in range(i+1, len(topic_list)):
-            # uncomment lines below to see the holdout topics for the model
+            # uncomment lines below to print the holdout topics for the model
             #print("Holdout article topics: ")
             #print(topic_list[i])
             #print(topic_list[j])
@@ -904,6 +910,8 @@ for entry in average_accuracies:
 ```
 
 For the series of Naive Bayes models created, the maximum accuracy score reached for any model is 44%. This was for a model trained on TF-IDF scores. This accuracy does not seem very high. Even the best of these models' predictions are wrong more often than they are right. However, since there are nine possible predictions that could be made (nine different sources), a random guess would expect to result in a 11% accuracy rate on average. This happens to also be the minimum accuracy score of any of these models. Therefore, all of these classifiers are still just as good or better than guessing which source an article comes from, simply given its text. 
+
+## Random Forest
 
 The same will be repeated with Random Forest models. In addition to using various holdout topic sets and dataframes to train and test these models on, a couple parameters will also be tested to see which ones result in the best performing model. 
 
