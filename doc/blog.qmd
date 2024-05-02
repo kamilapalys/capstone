@@ -83,6 +83,7 @@ def clean_text(text, stem):
   text = text.lower()
   text = text.replace('—', ' ')
   text = text.replace('u.s.', 'us')
+  text = text.replace('u.k.', 'uk')
   # convert to ascii characters
   text = text.encode("ascii", "ignore").decode()
   for chr in text:
