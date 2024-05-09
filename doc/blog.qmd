@@ -52,7 +52,6 @@ The text had to go through a lot of preparation before it could be ready for ana
 ```{python}
 # don't show future warnings
 import warnings
-#warnings.simplefilter(action='ignore', category=FutureWarning)
 warnings.filterwarnings("ignore")
 
 # initialize dictionary to be able to trace back a stemmed word to its original form
@@ -96,7 +95,8 @@ def clean_text(text, stem):
   # stem the tokens within the text
   tokens = text.split()
   new_tokens = []
-  for token in tokens[:-2]: # last two tokens identify source and topic, we do not want to stem them
+  for token in tokens[:-2]: # last two tokens identify source and topic,
+                            # we do not want to stem them
       # only include new token in the cleaned list if not a stopword
       if token not in stopwords_list:
           if stem == 1:
@@ -567,11 +567,11 @@ ggplot(data=biden_words,
 )
 ```
 
-Above we used scatterplots to see how the length of the Trump articles are related to the frequency of the word "Trump" within them, by source. We do, in fact, see that the point for Fox News, corresponding to the article @foxtrump, is an outlier. Given its article length, it does mention Trump a lot more frequently than the Trump articles from other sources. Out of curiosity, we look at the same visualization for the word "Biden" in the Biden articles. Interestingly, Fox News again appears to be an outlier (see @foxbiden). Given its article length, it also mentions Biden a lot more frequently than the remaining sources. Now, it is not as easy to make assumptions about the partiality of Fox News just based on these word frequencies. They could be more telling of the writing styles of each source, or it could also merely be a result of using such a small sample size of articles.
+Above, we used the first scatterplot to see how the length of the Trump articles are related to the frequency of the word "Trump" within them, by source. We do, in fact, see that the point for Fox News, corresponding to the article @foxtrump, is an outlier. Given its article length, it does mention Trump a lot more frequently than the Trump articles from other sources. Out of curiosity, we look at the same visualization for the word "Biden" in the Biden articles in the second scatterplot. Interestingly, Fox News again appears to be an outlier (see @foxbiden). Given its article length, it also mentions Biden a lot more frequently than the remaining sources. Now, it is not as easy to make assumptions about the partiality of Fox News just based on these word frequencies. They could be more telling of the writing styles of each source, or it could also merely be a result of using such a small sample size of articles.
 
 # Sentiment Analysis
 
-Next, the connotation of each article and source overall is studied. The TextBlob package in Python provides polarity and subjectivity scores for any text string. A polarity score, on a scale of [-1, 1], tells if the text has a positive or negative connotation to it. Subjectivity scores, on a scale of [0, 1] tells how opinionated or subjective a text sounds as opposed to being factual. The higher the score, the more subjective the text is. A dataframe is created that displays the polarity and subjectivity scores of each article, with various other columns being created that help place each article's score in the context of the entire corpus of documents and that will be used in following visualizations.
+Next, the connotation of each article and source overall is studied. The TextBlob package in Python provides polarity and subjectivity scores for any text string. A polarity score, on a scale of [-1, 1], tells if the text has a positive or negative connotation to it. A subjectivity score, on a scale of [0, 1] tells how opinionated or subjective a text sounds as opposed to being factual. The higher the score, the more subjective the text is. A dataframe is created that displays the polarity and subjectivity scores of each article, with various other columns being created that help place each article's score in the context of the entire corpus of documents and that will be used in following visualizations.
 
 ```{python}
 # calculate polarity and subjectivity scores, create dataframe
@@ -750,7 +750,7 @@ ggplot(polarity_devs, aes(x="source", y="polarity_dev", fill="sign"))
 )
 ```
 
-The visualization above tells us that The New York Times articles tend to be the most negative on average. They have the largest deviations from the topic's average polarity scores, which may indicate stronger wording. Each individual may infer what they wish with these results, but definitive conclusions should not be drawn from them, which will be explained a bit later. ABC News tends to write their articles more positive than average for the topics' mean polarity scores. BBC's articles are the closest to average polarity scores for each topic. The polarity scores may be viewed individually for the set of articles of any topic. Below, we see the polarity scores for the articles about the ruling against affirmative action. The New York Times was the only source with a negative polarity score for this topic, which could already be suggestive of its political views. 
+The visualization above tells us that The New York Times articles tend to be the most negative on average. They have the largest deviations from the topic's average polarity scores, which may indicate stronger wording. Each individual may infer what they wish with these results, but definitive conclusions should not be drawn from them, which will be explained a bit later. ABC News tends to write their articles more positively than average for the topics' mean polarity scores. BBC's articles are the closest to average polarity scores for each topic. The polarity scores may be viewed individually for the set of articles of any topic. Below, we see the polarity scores for the articles about the ruling against affirmative action. The New York Times was the only source with a negative polarity score for this topic, which could already be suggestive of its political views. 
 
 ```{python}
 # create bar chart of polarity scores of articles about a specific topic
@@ -851,7 +851,7 @@ From looking at outlier polarity scores, the articles about the Supreme Court ru
 
 ## Naive Bayes
 
-Now, for the main part of this project, a few different classifiers will be used to attempt to predict the source of a given article. If this can be done with high accuracy, it will show that the wording alone of the studied sources is distinct enough to be an identifying factor. First, Naive Bayes classifiers will be trained and tested on the articles included. Six topics will be used for training, and two for testing. As many classifiers will be created as needed (28) in order to use every possible split of topics for the training and testing sets. In addition, this process will be repeated for each of the three dataframes created (using binary values, frequencies, and TF-IDF scores of tokens) for a total of 84 Naive Bayes classifiers. This means that the models will be trained on the tokens (words) that appear in each model and their values (one of the three possible mentioned). The average accuracy scores of Naive Bayes models trained on any of the three value types are displayed in the table below. [Data Camp](https://www.datacamp.com/tutorial/naive-bayes-scikit-learn) was used as a source to code the Naive Bayes model, including fitting the model and making predictions (see @nb_confusion).
+Now, for the main part of this project, a few different classifiers will be used to try to determine the source of a given article. If this can be done with high accuracy, it will show that the wording alone of the studied sources is distinct enough to be an identifying factor. First, Naive Bayes classifiers will be trained and tested on the articles included. Six topics will be used for training, and two for testing. As many classifiers will be created as needed (28) in order to use every possible split of topics for the training and testing sets. In addition, this process will be repeated for each of the three dataframes created (using binary values, frequencies, and TF-IDF scores of tokens) for a total of 84 Naive Bayes classifiers. This means that the models will be trained on the tokens (words) that appear in each model and their values (one of the three possible mentioned). The average accuracy scores of Naive Bayes models trained on any of the three value types are displayed in the table below. [Data Camp](https://www.datacamp.com/tutorial/naive-bayes-scikit-learn) was used as a source to code the Naive Bayes model, including fitting the model and making predictions (see @nb_confusion).
 
 ```{python}
 # import libraries
@@ -962,7 +962,7 @@ def naive_bayes_cf(df, value_type):
                 best_accuracies_by_cf['Naive Bayes'] = accuracy
 
             # uncomment lines below to display results of every model
-            #print("Accuracy of Multinomial Naive Bayes Model:", accuracy)
+            # print("Accuracy of Multinomial Naive Bayes Model:", accuracy)
             #print("F1 score of Multinomial Naive Bayes Model:", f1)
             #print("\n\n")
 
@@ -986,7 +986,7 @@ def naive_bayes_cf(df, value_type):
     #   accuracy scores for the models trained within the function
     #print(f"Minimum Accuracy Score of any Multinomial Naive Bayes Model using {value_type}:",
     #    min(accuracy_list))
-    #print(f"Maximum Accuracy Score of any Multinomial Naive Bayes Model using {value_type}:",
+    # print(f"Maximum Accuracy Score of any Multinomial Naive Bayes Model using {value_type}:",
     #    max(accuracy_list))
     #print(f"Maximum F1 Score of any Multinomial Naive Bayes Model using {value_type}:",
     #    max(f1_score_list))
@@ -1182,7 +1182,7 @@ display(rf_results_df)
 # best_rf_params
 ```
 
-The best random forest classifier had an accuracy score of 61%. A few models with various parameters and holdout sets resulted in this accuracy score. The same parameters that have resulted in a model with a 61% accuracy have also resulted in models with an accuracy score as low as 11% (with a different holdout set). A few of the models that performed the worst (with worse parameters) had an accuracy score of 0%. As seen, using even the best parameters in the random forest models, the accuracy can wildly differ (11-61%) depending on which topics were used for training and testing. This is why the average accuracies are also displayed above for each combination of dataframe used and n_estimators and criterion parameters. It is reasonable to assume that this highly varied accuracy score that depends on the training/testing split could be remedied with a much larger sample of articles in the future, which could provide a rich set for both training and testing data. Still, a lot of the models' results can be considered good for our purposes! Using the right parameters and training/testing sets, we could correctly predict the source of an article about three out of every five times. It is worth pointing out that our goal here wasn't necessarily to determine with certainty which source a given article text comes from. Instead, the point of looking at the accuracies of these models is to be able to conclude whether the information about the words in an article is useful in determining the source of the article. I think we can say that this has been achieved. The vast majority of the time, the models had an accuracy score that was above the expected accuracy if one were to guess the source of an article (1/9, or 11%). This tells us that the wording between sources differs significantly enough to help us identify the source of an article. 
+The best random forest classifier had an accuracy score of 61%. A few models with various parameters and holdout sets resulted in this accuracy score. The same parameters that have resulted in a model with a 61% accuracy have also resulted in models with an accuracy score as low as 11% (with a different holdout set). A few of the models that performed the worst (with worse parameters) had an accuracy score of 0%. As seen, using even the best parameters in the random forest models, the accuracy can wildly differ (11-61%) depending on which topics were used for training and testing. This is why the average accuracies are also displayed above for each combination of dataframe used and n_estimators and criterion parameters. It is reasonable to assume that this highly varied accuracy score that depends on the training/testing split could be remedied with a much larger sample of articles in the future, which could provide a rich set for both training and testing data. Still, a lot of the models' results can be considered good for our purposes! Using the right parameters and training/testing sets, we can correctly classify the source of an article about three out of every five times. It is worth pointing out that our goal here wasn't necessarily to determine with certainty which source a given article text comes from. Instead, the point of looking at the accuracies of these models is to be able to conclude whether the information about the words in an article is useful in determining the source of the article. I think we can say that this has been achieved. The vast majority of the time, the models had an accuracy score that was above the expected accuracy if one were to guess the source of an article (1/9, or 11%). This tells us that the wording between sources differs significantly enough to help us identify the source of an article. 
 
 ```{python}
 # create confusion matrix of model with best parameters
@@ -1244,6 +1244,7 @@ To summarize what was revealed in this project, here are a few takeaways:
 * Other kinds of classifiers could also be tested, such as Stochastic Gradient Descent (SGD). 
 * Using a much larger sample of articles could lead to better results, as they would better represent each source.
 * Create a definition of bias in terms of word usage. Can we classify an article or source as biased? 
+* Look at these results over a period of time. Have news sources changed their writing styles or tones over the years?
 
 ::: {.callout-note collapse="true"}
 ## Articles used in project

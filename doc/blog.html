@@ -195,51 +195,51 @@ Topics chosen for article selection
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># don't show future warnings</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> warnings</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co">#warnings.simplefilter(action='ignore', category=FutureWarning)</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>warnings.filterwarnings(<span class="st">"ignore"</span>)</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="co"># initialize dictionary to be able to trace back a stemmed word to its original form</span></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>stemmed_dict <span class="op">=</span> {}</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> file_to_string(filename):</span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>  <span class="co">'''Opens the input text file and</span></span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="co">  returns a string of all its text.'''</span></span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>  <span class="bu">file</span> <span class="op">=</span> <span class="bu">open</span>(filename, <span class="st">'r'</span>)</span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>  text <span class="op">=</span> <span class="bu">file</span>.read()</span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>  <span class="bu">file</span>.close()</span>
-<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>  text <span class="op">=</span> text.replace(<span class="st">'</span><span class="ch">\n</span><span class="st">'</span>, <span class="st">' '</span>)</span>
-<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>  text <span class="op">=</span> text.replace(<span class="st">'  '</span>, <span class="st">' '</span>)</span>
-<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> text</span>
-<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> clean_text(text, stem):</span>
-<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>  <span class="co">'''Takes in a string of text and cleans it by converting</span></span>
-<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a><span class="co">  to lowercase, removing punctuation, and removing stopwords. </span></span>
-<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a><span class="co">  Also takes in a binary value to indicate if stemming should</span></span>
-<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a><span class="co">  be performed. Returns the new string.'''</span></span>
-<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> stem <span class="kw">not</span> <span class="kw">in</span> [<span class="dv">0</span>, <span class="dv">1</span>]:</span>
-<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>      <span class="cf">raise</span> <span class="pp">ValueError</span>(<span class="st">"Stem must be a binary value (0 or 1)"</span>)</span>
-<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>  ps <span class="op">=</span> PorterStemmer()</span>
-<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>  stemmed_dict <span class="op">=</span> {}</span>
-<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>  <span class="co"># create list of stopwords </span></span>
-<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>  stopwords_list <span class="op">=</span> stopwords.words(<span class="st">'english'</span>)</span>
-<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>  <span class="co"># make the text lowercase</span></span>
-<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>  text <span class="op">=</span> text.lower()</span>
-<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>  text <span class="op">=</span> text.replace(<span class="st">'—'</span>, <span class="st">' '</span>)</span>
-<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>  <span class="co"># the three below would be stemmed to "u", rather than "us" for example</span></span>
-<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>  text <span class="op">=</span> text.replace(<span class="st">'u.s.'</span>, <span class="st">'us'</span>)</span>
-<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>  text <span class="op">=</span> text.replace(<span class="st">'u.k.'</span>, <span class="st">'uk'</span>)</span>
-<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a>  text <span class="op">=</span> text.replace(<span class="st">'u.n.'</span>, <span class="st">'un'</span>)</span>
-<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>  <span class="co"># convert to ascii characters</span></span>
-<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a>  text <span class="op">=</span> text.encode(<span class="st">"ascii"</span>, <span class="st">"ignore"</span>).decode()</span>
-<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> <span class="bu">chr</span> <span class="kw">in</span> text:</span>
-<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a>      <span class="co"># only keep characters in the string that are not punctuation symbols</span></span>
-<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> (<span class="bu">chr</span> <span class="kw">in</span> string.punctuation <span class="kw">or</span> <span class="bu">chr</span> <span class="kw">in</span> string.digits):</span>
-<span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a>          text <span class="op">=</span> text.replace(<span class="bu">chr</span>, <span class="st">' '</span>)</span>
-<span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a>  text <span class="op">=</span> text.replace(<span class="st">'  '</span>, <span class="st">' '</span>)</span>
-<span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a>  <span class="co"># stem the tokens within the text</span></span>
-<span id="cb1-45"><a href="#cb1-45" aria-hidden="true" tabindex="-1"></a>  tokens <span class="op">=</span> text.split()</span>
-<span id="cb1-46"><a href="#cb1-46" aria-hidden="true" tabindex="-1"></a>  new_tokens <span class="op">=</span> []</span>
-<span id="cb1-47"><a href="#cb1-47" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> token <span class="kw">in</span> tokens[:<span class="op">-</span><span class="dv">2</span>]: <span class="co"># last two tokens identify source and topic, we do not want to stem them</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>warnings.filterwarnings(<span class="st">"ignore"</span>)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co"># initialize dictionary to be able to trace back a stemmed word to its original form</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>stemmed_dict <span class="op">=</span> {}</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> file_to_string(filename):</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>  <span class="co">'''Opens the input text file and</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="co">  returns a string of all its text.'''</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>  <span class="bu">file</span> <span class="op">=</span> <span class="bu">open</span>(filename, <span class="st">'r'</span>)</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>  text <span class="op">=</span> <span class="bu">file</span>.read()</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>  <span class="bu">file</span>.close()</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>  text <span class="op">=</span> text.replace(<span class="st">'</span><span class="ch">\n</span><span class="st">'</span>, <span class="st">' '</span>)</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>  text <span class="op">=</span> text.replace(<span class="st">'  '</span>, <span class="st">' '</span>)</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> text</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> clean_text(text, stem):</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>  <span class="co">'''Takes in a string of text and cleans it by converting</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a><span class="co">  to lowercase, removing punctuation, and removing stopwords. </span></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a><span class="co">  Also takes in a binary value to indicate if stemming should</span></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a><span class="co">  be performed. Returns the new string.'''</span></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> stem <span class="kw">not</span> <span class="kw">in</span> [<span class="dv">0</span>, <span class="dv">1</span>]:</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>      <span class="cf">raise</span> <span class="pp">ValueError</span>(<span class="st">"Stem must be a binary value (0 or 1)"</span>)</span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>  ps <span class="op">=</span> PorterStemmer()</span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>  stemmed_dict <span class="op">=</span> {}</span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>  <span class="co"># create list of stopwords </span></span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>  stopwords_list <span class="op">=</span> stopwords.words(<span class="st">'english'</span>)</span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>  <span class="co"># make the text lowercase</span></span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>  text <span class="op">=</span> text.lower()</span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>  text <span class="op">=</span> text.replace(<span class="st">'—'</span>, <span class="st">' '</span>)</span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>  <span class="co"># the three below would be stemmed to "u", rather than "us" for example</span></span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>  text <span class="op">=</span> text.replace(<span class="st">'u.s.'</span>, <span class="st">'us'</span>)</span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>  text <span class="op">=</span> text.replace(<span class="st">'u.k.'</span>, <span class="st">'uk'</span>)</span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>  text <span class="op">=</span> text.replace(<span class="st">'u.n.'</span>, <span class="st">'un'</span>)</span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a>  <span class="co"># convert to ascii characters</span></span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>  text <span class="op">=</span> text.encode(<span class="st">"ascii"</span>, <span class="st">"ignore"</span>).decode()</span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> <span class="bu">chr</span> <span class="kw">in</span> text:</span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a>      <span class="co"># only keep characters in the string that are not punctuation symbols</span></span>
+<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> (<span class="bu">chr</span> <span class="kw">in</span> string.punctuation <span class="kw">or</span> <span class="bu">chr</span> <span class="kw">in</span> string.digits):</span>
+<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a>          text <span class="op">=</span> text.replace(<span class="bu">chr</span>, <span class="st">' '</span>)</span>
+<span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a>  text <span class="op">=</span> text.replace(<span class="st">'  '</span>, <span class="st">' '</span>)</span>
+<span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a>  <span class="co"># stem the tokens within the text</span></span>
+<span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a>  tokens <span class="op">=</span> text.split()</span>
+<span id="cb1-45"><a href="#cb1-45" aria-hidden="true" tabindex="-1"></a>  new_tokens <span class="op">=</span> []</span>
+<span id="cb1-46"><a href="#cb1-46" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> token <span class="kw">in</span> tokens[:<span class="op">-</span><span class="dv">2</span>]: <span class="co"># last two tokens identify source and topic,</span></span>
+<span id="cb1-47"><a href="#cb1-47" aria-hidden="true" tabindex="-1"></a>                            <span class="co"># we do not want to stem them</span></span>
 <span id="cb1-48"><a href="#cb1-48" aria-hidden="true" tabindex="-1"></a>      <span class="co"># only include new token in the cleaned list if not a stopword</span></span>
 <span id="cb1-49"><a href="#cb1-49" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> token <span class="kw">not</span> <span class="kw">in</span> stopwords_list:</span>
 <span id="cb1-50"><a href="#cb1-50" aria-hidden="true" tabindex="-1"></a>          <span class="cf">if</span> stem <span class="op">==</span> <span class="dv">1</span>:</span>
@@ -913,13 +913,13 @@ Looking at the wordclouds
 <pre><code>&lt;Figure Size: (640 x 480)&gt;</code></pre>
 </div>
 </div>
-<p>Above we used scatterplots to see how the length of the Trump articles are related to the frequency of the word “Trump” within them, by source. We do, in fact, see that the point for Fox News, corresponding to the article <span class="citation" data-cites="foxtrump">Singman and Dhanis (<a href="#ref-foxtrump" role="doc-biblioref">2023</a>)</span>, is an outlier. Given its article length, it does mention Trump a lot more frequently than the Trump articles from other sources. Out of curiosity, we look at the same visualization for the word “Biden” in the Biden articles. Interestingly, Fox News again appears to be an outlier (see <span class="citation" data-cites="foxbiden">Steinhauser (<a href="#ref-foxbiden" role="doc-biblioref">2023</a>)</span>). Given its article length, it also mentions Biden a lot more frequently than the remaining sources. Now, it is not as easy to make assumptions about the partiality of Fox News just based on these word frequencies. They could be more telling of the writing styles of each source, or it could also merely be a result of using such a small sample size of articles.</p>
+<p>Above, we used the first scatterplot to see how the length of the Trump articles are related to the frequency of the word “Trump” within them, by source. We do, in fact, see that the point for Fox News, corresponding to the article <span class="citation" data-cites="foxtrump">Singman and Dhanis (<a href="#ref-foxtrump" role="doc-biblioref">2023</a>)</span>, is an outlier. Given its article length, it does mention Trump a lot more frequently than the Trump articles from other sources. Out of curiosity, we look at the same visualization for the word “Biden” in the Biden articles in the second scatterplot. Interestingly, Fox News again appears to be an outlier (see <span class="citation" data-cites="foxbiden">Steinhauser (<a href="#ref-foxbiden" role="doc-biblioref">2023</a>)</span>). Given its article length, it also mentions Biden a lot more frequently than the remaining sources. Now, it is not as easy to make assumptions about the partiality of Fox News just based on these word frequencies. They could be more telling of the writing styles of each source, or it could also merely be a result of using such a small sample size of articles.</p>
 </section>
 </section>
 </section>
 <section id="sentiment-analysis" class="level1">
 <h1>Sentiment Analysis</h1>
-<p>Next, the connotation of each article and source overall is studied. The TextBlob package in Python provides polarity and subjectivity scores for any text string. A polarity score, on a scale of [-1, 1], tells if the text has a positive or negative connotation to it. Subjectivity scores, on a scale of [0, 1] tells how opinionated or subjective a text sounds as opposed to being factual. The higher the score, the more subjective the text is. A dataframe is created that displays the polarity and subjectivity scores of each article, with various other columns being created that help place each article’s score in the context of the entire corpus of documents and that will be used in following visualizations.</p>
+<p>Next, the connotation of each article and source overall is studied. The TextBlob package in Python provides polarity and subjectivity scores for any text string. A polarity score, on a scale of [-1, 1], tells if the text has a positive or negative connotation to it. A subjectivity score, on a scale of [0, 1] tells how opinionated or subjective a text sounds as opposed to being factual. The higher the score, the more subjective the text is. A dataframe is created that displays the polarity and subjectivity scores of each article, with various other columns being created that help place each article’s score in the context of the entire corpus of documents and that will be used in following visualizations.</p>
 <div class="cell" data-execution_count="7">
 <details>
 <summary>Code</summary>
@@ -1245,7 +1245,7 @@ Looking at the wordclouds
 <pre><code>&lt;Figure Size: (1000 x 400)&gt;</code></pre>
 </div>
 </div>
-<p>The visualization above tells us that The New York Times articles tend to be the most negative on average. They have the largest deviations from the topic’s average polarity scores, which may indicate stronger wording. Each individual may infer what they wish with these results, but definitive conclusions should not be drawn from them, which will be explained a bit later. ABC News tends to write their articles more positive than average for the topics’ mean polarity scores. BBC’s articles are the closest to average polarity scores for each topic. The polarity scores may be viewed individually for the set of articles of any topic. Below, we see the polarity scores for the articles about the ruling against affirmative action. The New York Times was the only source with a negative polarity score for this topic, which could already be suggestive of its political views.</p>
+<p>The visualization above tells us that The New York Times articles tend to be the most negative on average. They have the largest deviations from the topic’s average polarity scores, which may indicate stronger wording. Each individual may infer what they wish with these results, but definitive conclusions should not be drawn from them, which will be explained a bit later. ABC News tends to write their articles more positively than average for the topics’ mean polarity scores. BBC’s articles are the closest to average polarity scores for each topic. The polarity scores may be viewed individually for the set of articles of any topic. Below, we see the polarity scores for the articles about the ruling against affirmative action. The New York Times was the only source with a negative polarity score for this topic, which could already be suggestive of its political views.</p>
 <div class="cell" data-execution_count="11">
 <details>
 <summary>Code</summary>
@@ -1422,7 +1422,7 @@ Looking at the wordclouds
 <h1>Predictive Modeling</h1>
 <section id="naive-bayes" class="level2">
 <h2 class="anchored" data-anchor-id="naive-bayes">Naive Bayes</h2>
-<p>Now, for the main part of this project, a few different classifiers will be used to attempt to predict the source of a given article. If this can be done with high accuracy, it will show that the wording alone of the studied sources is distinct enough to be an identifying factor. First, Naive Bayes classifiers will be trained and tested on the articles included. Six topics will be used for training, and two for testing. As many classifiers will be created as needed (28) in order to use every possible split of topics for the training and testing sets. In addition, this process will be repeated for each of the three dataframes created (using binary values, frequencies, and TF-IDF scores of tokens) for a total of 84 Naive Bayes classifiers. This means that the models will be trained on the tokens (words) that appear in each model and their values (one of the three possible mentioned). The average accuracy scores of Naive Bayes models trained on any of the three value types are displayed in the table below. <a href="https://www.datacamp.com/tutorial/naive-bayes-scikit-learn">Data Camp</a> was used as a source to code the Naive Bayes model, including fitting the model and making predictions (see <span class="citation" data-cites="nb_confusion"><span>“Naive Bayes Classification Tutorial Using Scikit-Learn”</span> (<a href="#ref-nb_confusion" role="doc-biblioref">2023</a>)</span>).</p>
+<p>Now, for the main part of this project, a few different classifiers will be used to try to determine the source of a given article. If this can be done with high accuracy, it will show that the wording alone of the studied sources is distinct enough to be an identifying factor. First, Naive Bayes classifiers will be trained and tested on the articles included. Six topics will be used for training, and two for testing. As many classifiers will be created as needed (28) in order to use every possible split of topics for the training and testing sets. In addition, this process will be repeated for each of the three dataframes created (using binary values, frequencies, and TF-IDF scores of tokens) for a total of 84 Naive Bayes classifiers. This means that the models will be trained on the tokens (words) that appear in each model and their values (one of the three possible mentioned). The average accuracy scores of Naive Bayes models trained on any of the three value types are displayed in the table below. <a href="https://www.datacamp.com/tutorial/naive-bayes-scikit-learn">Data Camp</a> was used as a source to code the Naive Bayes model, including fitting the model and making predictions (see <span class="citation" data-cites="nb_confusion"><span>“Naive Bayes Classification Tutorial Using Scikit-Learn”</span> (<a href="#ref-nb_confusion" role="doc-biblioref">2023</a>)</span>).</p>
 <div class="cell" data-execution_count="14">
 <details>
 <summary>Code</summary>
@@ -1534,7 +1534,7 @@ Looking at the wordclouds
 <span id="cb20-106"><a href="#cb20-106" aria-hidden="true" tabindex="-1"></a>                best_accuracies_by_cf[<span class="st">'Naive Bayes'</span>] <span class="op">=</span> accuracy</span>
 <span id="cb20-107"><a href="#cb20-107" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb20-108"><a href="#cb20-108" aria-hidden="true" tabindex="-1"></a>            <span class="co"># uncomment lines below to display results of every model</span></span>
-<span id="cb20-109"><a href="#cb20-109" aria-hidden="true" tabindex="-1"></a>            <span class="co">#print("Accuracy of Multinomial Naive Bayes Model:", accuracy)</span></span>
+<span id="cb20-109"><a href="#cb20-109" aria-hidden="true" tabindex="-1"></a>            <span class="co"># print("Accuracy of Multinomial Naive Bayes Model:", accuracy)</span></span>
 <span id="cb20-110"><a href="#cb20-110" aria-hidden="true" tabindex="-1"></a>            <span class="co">#print("F1 score of Multinomial Naive Bayes Model:", f1)</span></span>
 <span id="cb20-111"><a href="#cb20-111" aria-hidden="true" tabindex="-1"></a>            <span class="co">#print("\n\n")</span></span>
 <span id="cb20-112"><a href="#cb20-112" aria-hidden="true" tabindex="-1"></a></span>
@@ -1558,7 +1558,7 @@ Looking at the wordclouds
 <span id="cb20-130"><a href="#cb20-130" aria-hidden="true" tabindex="-1"></a>    <span class="co">#   accuracy scores for the models trained within the function</span></span>
 <span id="cb20-131"><a href="#cb20-131" aria-hidden="true" tabindex="-1"></a>    <span class="co">#print(f"Minimum Accuracy Score of any Multinomial Naive Bayes Model using {value_type}:",</span></span>
 <span id="cb20-132"><a href="#cb20-132" aria-hidden="true" tabindex="-1"></a>    <span class="co">#    min(accuracy_list))</span></span>
-<span id="cb20-133"><a href="#cb20-133" aria-hidden="true" tabindex="-1"></a>    <span class="co">#print(f"Maximum Accuracy Score of any Multinomial Naive Bayes Model using {value_type}:",</span></span>
+<span id="cb20-133"><a href="#cb20-133" aria-hidden="true" tabindex="-1"></a>    <span class="co"># print(f"Maximum Accuracy Score of any Multinomial Naive Bayes Model using {value_type}:",</span></span>
 <span id="cb20-134"><a href="#cb20-134" aria-hidden="true" tabindex="-1"></a>    <span class="co">#    max(accuracy_list))</span></span>
 <span id="cb20-135"><a href="#cb20-135" aria-hidden="true" tabindex="-1"></a>    <span class="co">#print(f"Maximum F1 Score of any Multinomial Naive Bayes Model using {value_type}:",</span></span>
 <span id="cb20-136"><a href="#cb20-136" aria-hidden="true" tabindex="-1"></a>    <span class="co">#    max(f1_score_list))</span></span>
@@ -1933,7 +1933,7 @@ Looking at the wordclouds
 </div>
 </div>
 </div>
-<p>The best random forest classifier had an accuracy score of 61%. A few models with various parameters and holdout sets resulted in this accuracy score. The same parameters that have resulted in a model with a 61% accuracy have also resulted in models with an accuracy score as low as 11% (with a different holdout set). A few of the models that performed the worst (with worse parameters) had an accuracy score of 0%. As seen, using even the best parameters in the random forest models, the accuracy can wildly differ (11-61%) depending on which topics were used for training and testing. This is why the average accuracies are also displayed above for each combination of dataframe used and n_estimators and criterion parameters. It is reasonable to assume that this highly varied accuracy score that depends on the training/testing split could be remedied with a much larger sample of articles in the future, which could provide a rich set for both training and testing data. Still, a lot of the models’ results can be considered good for our purposes! Using the right parameters and training/testing sets, we could correctly predict the source of an article about three out of every five times. It is worth pointing out that our goal here wasn’t necessarily to determine with certainty which source a given article text comes from. Instead, the point of looking at the accuracies of these models is to be able to conclude whether the information about the words in an article is useful in determining the source of the article. I think we can say that this has been achieved. The vast majority of the time, the models had an accuracy score that was above the expected accuracy if one were to guess the source of an article (1/9, or 11%). This tells us that the wording between sources differs significantly enough to help us identify the source of an article.</p>
+<p>The best random forest classifier had an accuracy score of 61%. A few models with various parameters and holdout sets resulted in this accuracy score. The same parameters that have resulted in a model with a 61% accuracy have also resulted in models with an accuracy score as low as 11% (with a different holdout set). A few of the models that performed the worst (with worse parameters) had an accuracy score of 0%. As seen, using even the best parameters in the random forest models, the accuracy can wildly differ (11-61%) depending on which topics were used for training and testing. This is why the average accuracies are also displayed above for each combination of dataframe used and n_estimators and criterion parameters. It is reasonable to assume that this highly varied accuracy score that depends on the training/testing split could be remedied with a much larger sample of articles in the future, which could provide a rich set for both training and testing data. Still, a lot of the models’ results can be considered good for our purposes! Using the right parameters and training/testing sets, we can correctly classify the source of an article about three out of every five times. It is worth pointing out that our goal here wasn’t necessarily to determine with certainty which source a given article text comes from. Instead, the point of looking at the accuracies of these models is to be able to conclude whether the information about the words in an article is useful in determining the source of the article. I think we can say that this has been achieved. The vast majority of the time, the models had an accuracy score that was above the expected accuracy if one were to guess the source of an article (1/9, or 11%). This tells us that the wording between sources differs significantly enough to help us identify the source of an article.</p>
 <div class="cell" data-execution_count="16">
 <details>
 <summary>Code</summary>
@@ -2000,6 +2000,7 @@ Looking at the wordclouds
 <li>Other kinds of classifiers could also be tested, such as Stochastic Gradient Descent (SGD).</li>
 <li>Using a much larger sample of articles could lead to better results, as they would better represent each source.</li>
 <li>Create a definition of bias in terms of word usage. Can we classify an article or source as biased?</li>
+<li>Look at these results over a period of time. Have news sources changed their writing styles or tones over the years?</li>
 </ul>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
@@ -2585,51 +2586,51 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 <span id="cb23-54"><a href="#cb23-54" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
 <span id="cb23-55"><a href="#cb23-55" aria-hidden="true" tabindex="-1"></a><span class="co"># don't show future warnings</span></span>
 <span id="cb23-56"><a href="#cb23-56" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> warnings</span>
-<span id="cb23-57"><a href="#cb23-57" aria-hidden="true" tabindex="-1"></a><span class="co">#warnings.simplefilter(action='ignore', category=FutureWarning)</span></span>
-<span id="cb23-58"><a href="#cb23-58" aria-hidden="true" tabindex="-1"></a>warnings.filterwarnings(<span class="st">"ignore"</span>)</span>
-<span id="cb23-59"><a href="#cb23-59" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb23-60"><a href="#cb23-60" aria-hidden="true" tabindex="-1"></a><span class="co"># initialize dictionary to be able to trace back a stemmed word to its original form</span></span>
-<span id="cb23-61"><a href="#cb23-61" aria-hidden="true" tabindex="-1"></a>stemmed_dict <span class="op">=</span> {}</span>
-<span id="cb23-62"><a href="#cb23-62" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb23-63"><a href="#cb23-63" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> file_to_string(filename):</span>
-<span id="cb23-64"><a href="#cb23-64" aria-hidden="true" tabindex="-1"></a>  <span class="co">'''Opens the input text file and</span></span>
-<span id="cb23-65"><a href="#cb23-65" aria-hidden="true" tabindex="-1"></a><span class="co">  returns a string of all its text.'''</span></span>
-<span id="cb23-66"><a href="#cb23-66" aria-hidden="true" tabindex="-1"></a>  <span class="bu">file</span> <span class="op">=</span> <span class="bu">open</span>(filename, <span class="st">'r'</span>)</span>
-<span id="cb23-67"><a href="#cb23-67" aria-hidden="true" tabindex="-1"></a>  text <span class="op">=</span> <span class="bu">file</span>.read()</span>
-<span id="cb23-68"><a href="#cb23-68" aria-hidden="true" tabindex="-1"></a>  <span class="bu">file</span>.close()</span>
-<span id="cb23-69"><a href="#cb23-69" aria-hidden="true" tabindex="-1"></a>  text <span class="op">=</span> text.replace(<span class="st">'</span><span class="ch">\n</span><span class="st">'</span>, <span class="st">' '</span>)</span>
-<span id="cb23-70"><a href="#cb23-70" aria-hidden="true" tabindex="-1"></a>  text <span class="op">=</span> text.replace(<span class="st">'  '</span>, <span class="st">' '</span>)</span>
-<span id="cb23-71"><a href="#cb23-71" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> text</span>
-<span id="cb23-72"><a href="#cb23-72" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb23-73"><a href="#cb23-73" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> clean_text(text, stem):</span>
-<span id="cb23-74"><a href="#cb23-74" aria-hidden="true" tabindex="-1"></a>  <span class="co">'''Takes in a string of text and cleans it by converting</span></span>
-<span id="cb23-75"><a href="#cb23-75" aria-hidden="true" tabindex="-1"></a><span class="co">  to lowercase, removing punctuation, and removing stopwords. </span></span>
-<span id="cb23-76"><a href="#cb23-76" aria-hidden="true" tabindex="-1"></a><span class="co">  Also takes in a binary value to indicate if stemming should</span></span>
-<span id="cb23-77"><a href="#cb23-77" aria-hidden="true" tabindex="-1"></a><span class="co">  be performed. Returns the new string.'''</span></span>
-<span id="cb23-78"><a href="#cb23-78" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> stem <span class="kw">not</span> <span class="kw">in</span> [<span class="dv">0</span>, <span class="dv">1</span>]:</span>
-<span id="cb23-79"><a href="#cb23-79" aria-hidden="true" tabindex="-1"></a>      <span class="cf">raise</span> <span class="pp">ValueError</span>(<span class="st">"Stem must be a binary value (0 or 1)"</span>)</span>
-<span id="cb23-80"><a href="#cb23-80" aria-hidden="true" tabindex="-1"></a>  ps <span class="op">=</span> PorterStemmer()</span>
-<span id="cb23-81"><a href="#cb23-81" aria-hidden="true" tabindex="-1"></a>  stemmed_dict <span class="op">=</span> {}</span>
-<span id="cb23-82"><a href="#cb23-82" aria-hidden="true" tabindex="-1"></a>  <span class="co"># create list of stopwords </span></span>
-<span id="cb23-83"><a href="#cb23-83" aria-hidden="true" tabindex="-1"></a>  stopwords_list <span class="op">=</span> stopwords.words(<span class="st">'english'</span>)</span>
-<span id="cb23-84"><a href="#cb23-84" aria-hidden="true" tabindex="-1"></a>  <span class="co"># make the text lowercase</span></span>
-<span id="cb23-85"><a href="#cb23-85" aria-hidden="true" tabindex="-1"></a>  text <span class="op">=</span> text.lower()</span>
-<span id="cb23-86"><a href="#cb23-86" aria-hidden="true" tabindex="-1"></a>  text <span class="op">=</span> text.replace(<span class="st">'—'</span>, <span class="st">' '</span>)</span>
-<span id="cb23-87"><a href="#cb23-87" aria-hidden="true" tabindex="-1"></a>  <span class="co"># the three below would be stemmed to "u", rather than "us" for example</span></span>
-<span id="cb23-88"><a href="#cb23-88" aria-hidden="true" tabindex="-1"></a>  text <span class="op">=</span> text.replace(<span class="st">'u.s.'</span>, <span class="st">'us'</span>)</span>
-<span id="cb23-89"><a href="#cb23-89" aria-hidden="true" tabindex="-1"></a>  text <span class="op">=</span> text.replace(<span class="st">'u.k.'</span>, <span class="st">'uk'</span>)</span>
-<span id="cb23-90"><a href="#cb23-90" aria-hidden="true" tabindex="-1"></a>  text <span class="op">=</span> text.replace(<span class="st">'u.n.'</span>, <span class="st">'un'</span>)</span>
-<span id="cb23-91"><a href="#cb23-91" aria-hidden="true" tabindex="-1"></a>  <span class="co"># convert to ascii characters</span></span>
-<span id="cb23-92"><a href="#cb23-92" aria-hidden="true" tabindex="-1"></a>  text <span class="op">=</span> text.encode(<span class="st">"ascii"</span>, <span class="st">"ignore"</span>).decode()</span>
-<span id="cb23-93"><a href="#cb23-93" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> <span class="bu">chr</span> <span class="kw">in</span> text:</span>
-<span id="cb23-94"><a href="#cb23-94" aria-hidden="true" tabindex="-1"></a>      <span class="co"># only keep characters in the string that are not punctuation symbols</span></span>
-<span id="cb23-95"><a href="#cb23-95" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> (<span class="bu">chr</span> <span class="kw">in</span> string.punctuation <span class="kw">or</span> <span class="bu">chr</span> <span class="kw">in</span> string.digits):</span>
-<span id="cb23-96"><a href="#cb23-96" aria-hidden="true" tabindex="-1"></a>          text <span class="op">=</span> text.replace(<span class="bu">chr</span>, <span class="st">' '</span>)</span>
-<span id="cb23-97"><a href="#cb23-97" aria-hidden="true" tabindex="-1"></a>  text <span class="op">=</span> text.replace(<span class="st">'  '</span>, <span class="st">' '</span>)</span>
-<span id="cb23-98"><a href="#cb23-98" aria-hidden="true" tabindex="-1"></a>  <span class="co"># stem the tokens within the text</span></span>
-<span id="cb23-99"><a href="#cb23-99" aria-hidden="true" tabindex="-1"></a>  tokens <span class="op">=</span> text.split()</span>
-<span id="cb23-100"><a href="#cb23-100" aria-hidden="true" tabindex="-1"></a>  new_tokens <span class="op">=</span> []</span>
-<span id="cb23-101"><a href="#cb23-101" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> token <span class="kw">in</span> tokens[:<span class="op">-</span><span class="dv">2</span>]: <span class="co"># last two tokens identify source and topic, we do not want to stem them</span></span>
+<span id="cb23-57"><a href="#cb23-57" aria-hidden="true" tabindex="-1"></a>warnings.filterwarnings(<span class="st">"ignore"</span>)</span>
+<span id="cb23-58"><a href="#cb23-58" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-59"><a href="#cb23-59" aria-hidden="true" tabindex="-1"></a><span class="co"># initialize dictionary to be able to trace back a stemmed word to its original form</span></span>
+<span id="cb23-60"><a href="#cb23-60" aria-hidden="true" tabindex="-1"></a>stemmed_dict <span class="op">=</span> {}</span>
+<span id="cb23-61"><a href="#cb23-61" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-62"><a href="#cb23-62" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> file_to_string(filename):</span>
+<span id="cb23-63"><a href="#cb23-63" aria-hidden="true" tabindex="-1"></a>  <span class="co">'''Opens the input text file and</span></span>
+<span id="cb23-64"><a href="#cb23-64" aria-hidden="true" tabindex="-1"></a><span class="co">  returns a string of all its text.'''</span></span>
+<span id="cb23-65"><a href="#cb23-65" aria-hidden="true" tabindex="-1"></a>  <span class="bu">file</span> <span class="op">=</span> <span class="bu">open</span>(filename, <span class="st">'r'</span>)</span>
+<span id="cb23-66"><a href="#cb23-66" aria-hidden="true" tabindex="-1"></a>  text <span class="op">=</span> <span class="bu">file</span>.read()</span>
+<span id="cb23-67"><a href="#cb23-67" aria-hidden="true" tabindex="-1"></a>  <span class="bu">file</span>.close()</span>
+<span id="cb23-68"><a href="#cb23-68" aria-hidden="true" tabindex="-1"></a>  text <span class="op">=</span> text.replace(<span class="st">'</span><span class="ch">\n</span><span class="st">'</span>, <span class="st">' '</span>)</span>
+<span id="cb23-69"><a href="#cb23-69" aria-hidden="true" tabindex="-1"></a>  text <span class="op">=</span> text.replace(<span class="st">'  '</span>, <span class="st">' '</span>)</span>
+<span id="cb23-70"><a href="#cb23-70" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> text</span>
+<span id="cb23-71"><a href="#cb23-71" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-72"><a href="#cb23-72" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> clean_text(text, stem):</span>
+<span id="cb23-73"><a href="#cb23-73" aria-hidden="true" tabindex="-1"></a>  <span class="co">'''Takes in a string of text and cleans it by converting</span></span>
+<span id="cb23-74"><a href="#cb23-74" aria-hidden="true" tabindex="-1"></a><span class="co">  to lowercase, removing punctuation, and removing stopwords. </span></span>
+<span id="cb23-75"><a href="#cb23-75" aria-hidden="true" tabindex="-1"></a><span class="co">  Also takes in a binary value to indicate if stemming should</span></span>
+<span id="cb23-76"><a href="#cb23-76" aria-hidden="true" tabindex="-1"></a><span class="co">  be performed. Returns the new string.'''</span></span>
+<span id="cb23-77"><a href="#cb23-77" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> stem <span class="kw">not</span> <span class="kw">in</span> [<span class="dv">0</span>, <span class="dv">1</span>]:</span>
+<span id="cb23-78"><a href="#cb23-78" aria-hidden="true" tabindex="-1"></a>      <span class="cf">raise</span> <span class="pp">ValueError</span>(<span class="st">"Stem must be a binary value (0 or 1)"</span>)</span>
+<span id="cb23-79"><a href="#cb23-79" aria-hidden="true" tabindex="-1"></a>  ps <span class="op">=</span> PorterStemmer()</span>
+<span id="cb23-80"><a href="#cb23-80" aria-hidden="true" tabindex="-1"></a>  stemmed_dict <span class="op">=</span> {}</span>
+<span id="cb23-81"><a href="#cb23-81" aria-hidden="true" tabindex="-1"></a>  <span class="co"># create list of stopwords </span></span>
+<span id="cb23-82"><a href="#cb23-82" aria-hidden="true" tabindex="-1"></a>  stopwords_list <span class="op">=</span> stopwords.words(<span class="st">'english'</span>)</span>
+<span id="cb23-83"><a href="#cb23-83" aria-hidden="true" tabindex="-1"></a>  <span class="co"># make the text lowercase</span></span>
+<span id="cb23-84"><a href="#cb23-84" aria-hidden="true" tabindex="-1"></a>  text <span class="op">=</span> text.lower()</span>
+<span id="cb23-85"><a href="#cb23-85" aria-hidden="true" tabindex="-1"></a>  text <span class="op">=</span> text.replace(<span class="st">'—'</span>, <span class="st">' '</span>)</span>
+<span id="cb23-86"><a href="#cb23-86" aria-hidden="true" tabindex="-1"></a>  <span class="co"># the three below would be stemmed to "u", rather than "us" for example</span></span>
+<span id="cb23-87"><a href="#cb23-87" aria-hidden="true" tabindex="-1"></a>  text <span class="op">=</span> text.replace(<span class="st">'u.s.'</span>, <span class="st">'us'</span>)</span>
+<span id="cb23-88"><a href="#cb23-88" aria-hidden="true" tabindex="-1"></a>  text <span class="op">=</span> text.replace(<span class="st">'u.k.'</span>, <span class="st">'uk'</span>)</span>
+<span id="cb23-89"><a href="#cb23-89" aria-hidden="true" tabindex="-1"></a>  text <span class="op">=</span> text.replace(<span class="st">'u.n.'</span>, <span class="st">'un'</span>)</span>
+<span id="cb23-90"><a href="#cb23-90" aria-hidden="true" tabindex="-1"></a>  <span class="co"># convert to ascii characters</span></span>
+<span id="cb23-91"><a href="#cb23-91" aria-hidden="true" tabindex="-1"></a>  text <span class="op">=</span> text.encode(<span class="st">"ascii"</span>, <span class="st">"ignore"</span>).decode()</span>
+<span id="cb23-92"><a href="#cb23-92" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> <span class="bu">chr</span> <span class="kw">in</span> text:</span>
+<span id="cb23-93"><a href="#cb23-93" aria-hidden="true" tabindex="-1"></a>      <span class="co"># only keep characters in the string that are not punctuation symbols</span></span>
+<span id="cb23-94"><a href="#cb23-94" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> (<span class="bu">chr</span> <span class="kw">in</span> string.punctuation <span class="kw">or</span> <span class="bu">chr</span> <span class="kw">in</span> string.digits):</span>
+<span id="cb23-95"><a href="#cb23-95" aria-hidden="true" tabindex="-1"></a>          text <span class="op">=</span> text.replace(<span class="bu">chr</span>, <span class="st">' '</span>)</span>
+<span id="cb23-96"><a href="#cb23-96" aria-hidden="true" tabindex="-1"></a>  text <span class="op">=</span> text.replace(<span class="st">'  '</span>, <span class="st">' '</span>)</span>
+<span id="cb23-97"><a href="#cb23-97" aria-hidden="true" tabindex="-1"></a>  <span class="co"># stem the tokens within the text</span></span>
+<span id="cb23-98"><a href="#cb23-98" aria-hidden="true" tabindex="-1"></a>  tokens <span class="op">=</span> text.split()</span>
+<span id="cb23-99"><a href="#cb23-99" aria-hidden="true" tabindex="-1"></a>  new_tokens <span class="op">=</span> []</span>
+<span id="cb23-100"><a href="#cb23-100" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> token <span class="kw">in</span> tokens[:<span class="op">-</span><span class="dv">2</span>]: <span class="co"># last two tokens identify source and topic,</span></span>
+<span id="cb23-101"><a href="#cb23-101" aria-hidden="true" tabindex="-1"></a>                            <span class="co"># we do not want to stem them</span></span>
 <span id="cb23-102"><a href="#cb23-102" aria-hidden="true" tabindex="-1"></a>      <span class="co"># only include new token in the cleaned list if not a stopword</span></span>
 <span id="cb23-103"><a href="#cb23-103" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> token <span class="kw">not</span> <span class="kw">in</span> stopwords_list:</span>
 <span id="cb23-104"><a href="#cb23-104" aria-hidden="true" tabindex="-1"></a>          <span class="cf">if</span> stem <span class="op">==</span> <span class="dv">1</span>:</span>
@@ -3100,11 +3101,11 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 <span id="cb23-579"><a href="#cb23-579" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb23-580"><a href="#cb23-580" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
 <span id="cb23-581"><a href="#cb23-581" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb23-582"><a href="#cb23-582" aria-hidden="true" tabindex="-1"></a>Above we used scatterplots to see how the length of the Trump articles are related to the frequency of the word "Trump" within them, by source. We do, in fact, see that the point for Fox News, corresponding to the article @foxtrump, is an outlier. Given its article length, it does mention Trump a lot more frequently than the Trump articles from other sources. Out of curiosity, we look at the same visualization for the word "Biden" in the Biden articles. Interestingly, Fox News again appears to be an outlier (see @foxbiden). Given its article length, it also mentions Biden a lot more frequently than the remaining sources. Now, it is not as easy to make assumptions about the partiality of Fox News just based on these word frequencies. They could be more telling of the writing styles of each source, or it could also merely be a result of using such a small sample size of articles.</span>
+<span id="cb23-582"><a href="#cb23-582" aria-hidden="true" tabindex="-1"></a>Above, we used the first scatterplot to see how the length of the Trump articles are related to the frequency of the word "Trump" within them, by source. We do, in fact, see that the point for Fox News, corresponding to the article @foxtrump, is an outlier. Given its article length, it does mention Trump a lot more frequently than the Trump articles from other sources. Out of curiosity, we look at the same visualization for the word "Biden" in the Biden articles in the second scatterplot. Interestingly, Fox News again appears to be an outlier (see @foxbiden). Given its article length, it also mentions Biden a lot more frequently than the remaining sources. Now, it is not as easy to make assumptions about the partiality of Fox News just based on these word frequencies. They could be more telling of the writing styles of each source, or it could also merely be a result of using such a small sample size of articles.</span>
 <span id="cb23-583"><a href="#cb23-583" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb23-584"><a href="#cb23-584" aria-hidden="true" tabindex="-1"></a><span class="fu"># Sentiment Analysis</span></span>
 <span id="cb23-585"><a href="#cb23-585" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb23-586"><a href="#cb23-586" aria-hidden="true" tabindex="-1"></a>Next, the connotation of each article and source overall is studied. The TextBlob package in Python provides polarity and subjectivity scores for any text string. A polarity score, on a scale of <span class="co">[</span><span class="ot">-1, 1</span><span class="co">]</span>, tells if the text has a positive or negative connotation to it. Subjectivity scores, on a scale of <span class="co">[</span><span class="ot">0, 1</span><span class="co">]</span> tells how opinionated or subjective a text sounds as opposed to being factual. The higher the score, the more subjective the text is. A dataframe is created that displays the polarity and subjectivity scores of each article, with various other columns being created that help place each article's score in the context of the entire corpus of documents and that will be used in following visualizations.</span>
+<span id="cb23-586"><a href="#cb23-586" aria-hidden="true" tabindex="-1"></a>Next, the connotation of each article and source overall is studied. The TextBlob package in Python provides polarity and subjectivity scores for any text string. A polarity score, on a scale of <span class="co">[</span><span class="ot">-1, 1</span><span class="co">]</span>, tells if the text has a positive or negative connotation to it. A subjectivity score, on a scale of <span class="co">[</span><span class="ot">0, 1</span><span class="co">]</span> tells how opinionated or subjective a text sounds as opposed to being factual. The higher the score, the more subjective the text is. A dataframe is created that displays the polarity and subjectivity scores of each article, with various other columns being created that help place each article's score in the context of the entire corpus of documents and that will be used in following visualizations.</span>
 <span id="cb23-587"><a href="#cb23-587" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb23-590"><a href="#cb23-590" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
 <span id="cb23-591"><a href="#cb23-591" aria-hidden="true" tabindex="-1"></a><span class="co"># calculate polarity and subjectivity scores, create dataframe</span></span>
@@ -3283,7 +3284,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 <span id="cb23-770"><a href="#cb23-770" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb23-771"><a href="#cb23-771" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
 <span id="cb23-772"><a href="#cb23-772" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb23-773"><a href="#cb23-773" aria-hidden="true" tabindex="-1"></a>The visualization above tells us that The New York Times articles tend to be the most negative on average. They have the largest deviations from the topic's average polarity scores, which may indicate stronger wording. Each individual may infer what they wish with these results, but definitive conclusions should not be drawn from them, which will be explained a bit later. ABC News tends to write their articles more positive than average for the topics' mean polarity scores. BBC's articles are the closest to average polarity scores for each topic. The polarity scores may be viewed individually for the set of articles of any topic. Below, we see the polarity scores for the articles about the ruling against affirmative action. The New York Times was the only source with a negative polarity score for this topic, which could already be suggestive of its political views. </span>
+<span id="cb23-773"><a href="#cb23-773" aria-hidden="true" tabindex="-1"></a>The visualization above tells us that The New York Times articles tend to be the most negative on average. They have the largest deviations from the topic's average polarity scores, which may indicate stronger wording. Each individual may infer what they wish with these results, but definitive conclusions should not be drawn from them, which will be explained a bit later. ABC News tends to write their articles more positively than average for the topics' mean polarity scores. BBC's articles are the closest to average polarity scores for each topic. The polarity scores may be viewed individually for the set of articles of any topic. Below, we see the polarity scores for the articles about the ruling against affirmative action. The New York Times was the only source with a negative polarity score for this topic, which could already be suggestive of its political views. </span>
 <span id="cb23-774"><a href="#cb23-774" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb23-777"><a href="#cb23-777" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
 <span id="cb23-778"><a href="#cb23-778" aria-hidden="true" tabindex="-1"></a><span class="co"># create bar chart of polarity scores of articles about a specific topic</span></span>
@@ -3384,7 +3385,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 <span id="cb23-877"><a href="#cb23-877" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb23-878"><a href="#cb23-878" aria-hidden="true" tabindex="-1"></a><span class="fu">## Naive Bayes</span></span>
 <span id="cb23-879"><a href="#cb23-879" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb23-880"><a href="#cb23-880" aria-hidden="true" tabindex="-1"></a>Now, for the main part of this project, a few different classifiers will be used to attempt to predict the source of a given article. If this can be done with high accuracy, it will show that the wording alone of the studied sources is distinct enough to be an identifying factor. First, Naive Bayes classifiers will be trained and tested on the articles included. Six topics will be used for training, and two for testing. As many classifiers will be created as needed (28) in order to use every possible split of topics for the training and testing sets. In addition, this process will be repeated for each of the three dataframes created (using binary values, frequencies, and TF-IDF scores of tokens) for a total of 84 Naive Bayes classifiers. This means that the models will be trained on the tokens (words) that appear in each model and their values (one of the three possible mentioned). The average accuracy scores of Naive Bayes models trained on any of the three value types are displayed in the table below. <span class="co">[</span><span class="ot">Data Camp</span><span class="co">](https://www.datacamp.com/tutorial/naive-bayes-scikit-learn)</span> was used as a source to code the Naive Bayes model, including fitting the model and making predictions (see @nb_confusion).</span>
+<span id="cb23-880"><a href="#cb23-880" aria-hidden="true" tabindex="-1"></a>Now, for the main part of this project, a few different classifiers will be used to try to determine the source of a given article. If this can be done with high accuracy, it will show that the wording alone of the studied sources is distinct enough to be an identifying factor. First, Naive Bayes classifiers will be trained and tested on the articles included. Six topics will be used for training, and two for testing. As many classifiers will be created as needed (28) in order to use every possible split of topics for the training and testing sets. In addition, this process will be repeated for each of the three dataframes created (using binary values, frequencies, and TF-IDF scores of tokens) for a total of 84 Naive Bayes classifiers. This means that the models will be trained on the tokens (words) that appear in each model and their values (one of the three possible mentioned). The average accuracy scores of Naive Bayes models trained on any of the three value types are displayed in the table below. <span class="co">[</span><span class="ot">Data Camp</span><span class="co">](https://www.datacamp.com/tutorial/naive-bayes-scikit-learn)</span> was used as a source to code the Naive Bayes model, including fitting the model and making predictions (see @nb_confusion).</span>
 <span id="cb23-881"><a href="#cb23-881" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb23-884"><a href="#cb23-884" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
 <span id="cb23-885"><a href="#cb23-885" aria-hidden="true" tabindex="-1"></a><span class="co"># import libraries</span></span>
@@ -3495,7 +3496,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 <span id="cb23-990"><a href="#cb23-990" aria-hidden="true" tabindex="-1"></a>                best_accuracies_by_cf[<span class="st">'Naive Bayes'</span>] <span class="op">=</span> accuracy</span>
 <span id="cb23-991"><a href="#cb23-991" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb23-992"><a href="#cb23-992" aria-hidden="true" tabindex="-1"></a>            <span class="co"># uncomment lines below to display results of every model</span></span>
-<span id="cb23-993"><a href="#cb23-993" aria-hidden="true" tabindex="-1"></a>            <span class="co">#print("Accuracy of Multinomial Naive Bayes Model:", accuracy)</span></span>
+<span id="cb23-993"><a href="#cb23-993" aria-hidden="true" tabindex="-1"></a>            <span class="co"># print("Accuracy of Multinomial Naive Bayes Model:", accuracy)</span></span>
 <span id="cb23-994"><a href="#cb23-994" aria-hidden="true" tabindex="-1"></a>            <span class="co">#print("F1 score of Multinomial Naive Bayes Model:", f1)</span></span>
 <span id="cb23-995"><a href="#cb23-995" aria-hidden="true" tabindex="-1"></a>            <span class="co">#print("\n\n")</span></span>
 <span id="cb23-996"><a href="#cb23-996" aria-hidden="true" tabindex="-1"></a></span>
@@ -3519,7 +3520,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 <span id="cb23-1014"><a href="#cb23-1014" aria-hidden="true" tabindex="-1"></a>    <span class="co">#   accuracy scores for the models trained within the function</span></span>
 <span id="cb23-1015"><a href="#cb23-1015" aria-hidden="true" tabindex="-1"></a>    <span class="co">#print(f"Minimum Accuracy Score of any Multinomial Naive Bayes Model using {value_type}:",</span></span>
 <span id="cb23-1016"><a href="#cb23-1016" aria-hidden="true" tabindex="-1"></a>    <span class="co">#    min(accuracy_list))</span></span>
-<span id="cb23-1017"><a href="#cb23-1017" aria-hidden="true" tabindex="-1"></a>    <span class="co">#print(f"Maximum Accuracy Score of any Multinomial Naive Bayes Model using {value_type}:",</span></span>
+<span id="cb23-1017"><a href="#cb23-1017" aria-hidden="true" tabindex="-1"></a>    <span class="co"># print(f"Maximum Accuracy Score of any Multinomial Naive Bayes Model using {value_type}:",</span></span>
 <span id="cb23-1018"><a href="#cb23-1018" aria-hidden="true" tabindex="-1"></a>    <span class="co">#    max(accuracy_list))</span></span>
 <span id="cb23-1019"><a href="#cb23-1019" aria-hidden="true" tabindex="-1"></a>    <span class="co">#print(f"Maximum F1 Score of any Multinomial Naive Bayes Model using {value_type}:",</span></span>
 <span id="cb23-1020"><a href="#cb23-1020" aria-hidden="true" tabindex="-1"></a>    <span class="co">#    max(f1_score_list))</span></span>
@@ -3715,7 +3716,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 <span id="cb23-1212"><a href="#cb23-1212" aria-hidden="true" tabindex="-1"></a><span class="co"># best_rf_params</span></span>
 <span id="cb23-1213"><a href="#cb23-1213" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
 <span id="cb23-1214"><a href="#cb23-1214" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb23-1215"><a href="#cb23-1215" aria-hidden="true" tabindex="-1"></a>The best random forest classifier had an accuracy score of 61%. A few models with various parameters and holdout sets resulted in this accuracy score. The same parameters that have resulted in a model with a 61% accuracy have also resulted in models with an accuracy score as low as 11% (with a different holdout set). A few of the models that performed the worst (with worse parameters) had an accuracy score of 0%. As seen, using even the best parameters in the random forest models, the accuracy can wildly differ (11-61%) depending on which topics were used for training and testing. This is why the average accuracies are also displayed above for each combination of dataframe used and n_estimators and criterion parameters. It is reasonable to assume that this highly varied accuracy score that depends on the training/testing split could be remedied with a much larger sample of articles in the future, which could provide a rich set for both training and testing data. Still, a lot of the models' results can be considered good for our purposes! Using the right parameters and training/testing sets, we could correctly predict the source of an article about three out of every five times. It is worth pointing out that our goal here wasn't necessarily to determine with certainty which source a given article text comes from. Instead, the point of looking at the accuracies of these models is to be able to conclude whether the information about the words in an article is useful in determining the source of the article. I think we can say that this has been achieved. The vast majority of the time, the models had an accuracy score that was above the expected accuracy if one were to guess the source of an article (1/9, or 11%). This tells us that the wording between sources differs significantly enough to help us identify the source of an article. </span>
+<span id="cb23-1215"><a href="#cb23-1215" aria-hidden="true" tabindex="-1"></a>The best random forest classifier had an accuracy score of 61%. A few models with various parameters and holdout sets resulted in this accuracy score. The same parameters that have resulted in a model with a 61% accuracy have also resulted in models with an accuracy score as low as 11% (with a different holdout set). A few of the models that performed the worst (with worse parameters) had an accuracy score of 0%. As seen, using even the best parameters in the random forest models, the accuracy can wildly differ (11-61%) depending on which topics were used for training and testing. This is why the average accuracies are also displayed above for each combination of dataframe used and n_estimators and criterion parameters. It is reasonable to assume that this highly varied accuracy score that depends on the training/testing split could be remedied with a much larger sample of articles in the future, which could provide a rich set for both training and testing data. Still, a lot of the models' results can be considered good for our purposes! Using the right parameters and training/testing sets, we can correctly classify the source of an article about three out of every five times. It is worth pointing out that our goal here wasn't necessarily to determine with certainty which source a given article text comes from. Instead, the point of looking at the accuracies of these models is to be able to conclude whether the information about the words in an article is useful in determining the source of the article. I think we can say that this has been achieved. The vast majority of the time, the models had an accuracy score that was above the expected accuracy if one were to guess the source of an article (1/9, or 11%). This tells us that the wording between sources differs significantly enough to help us identify the source of an article. </span>
 <span id="cb23-1216"><a href="#cb23-1216" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb23-1219"><a href="#cb23-1219" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
 <span id="cb23-1220"><a href="#cb23-1220" aria-hidden="true" tabindex="-1"></a><span class="co"># create confusion matrix of model with best parameters</span></span>
@@ -3777,82 +3778,83 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 <span id="cb23-1276"><a href="#cb23-1276" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>Other kinds of classifiers could also be tested, such as Stochastic Gradient Descent (SGD). </span>
 <span id="cb23-1277"><a href="#cb23-1277" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>Using a much larger sample of articles could lead to better results, as they would better represent each source.</span>
 <span id="cb23-1278"><a href="#cb23-1278" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>Create a definition of bias in terms of word usage. Can we classify an article or source as biased? </span>
-<span id="cb23-1279"><a href="#cb23-1279" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb23-1280"><a href="#cb23-1280" aria-hidden="true" tabindex="-1"></a>::: {.callout-note collapse="true"}</span>
-<span id="cb23-1281"><a href="#cb23-1281" aria-hidden="true" tabindex="-1"></a><span class="fu">## Articles used in project</span></span>
-<span id="cb23-1282"><a href="#cb23-1282" aria-hidden="true" tabindex="-1"></a>@abcaffirmative</span>
-<span id="cb23-1283"><a href="#cb23-1283" aria-hidden="true" tabindex="-1"></a>@abcballoon</span>
-<span id="cb23-1284"><a href="#cb23-1284" aria-hidden="true" tabindex="-1"></a>@abcbiden</span>
-<span id="cb23-1285"><a href="#cb23-1285" aria-hidden="true" tabindex="-1"></a>@abchamas</span>
-<span id="cb23-1286"><a href="#cb23-1286" aria-hidden="true" tabindex="-1"></a>@abcpentagon</span>
-<span id="cb23-1287"><a href="#cb23-1287" aria-hidden="true" tabindex="-1"></a>@abcsantos</span>
-<span id="cb23-1288"><a href="#cb23-1288" aria-hidden="true" tabindex="-1"></a>@abctanks</span>
-<span id="cb23-1289"><a href="#cb23-1289" aria-hidden="true" tabindex="-1"></a>@abctrump</span>
-<span id="cb23-1290"><a href="#cb23-1290" aria-hidden="true" tabindex="-1"></a>@bbcaffirmative</span>
-<span id="cb23-1291"><a href="#cb23-1291" aria-hidden="true" tabindex="-1"></a>@bbcballoon</span>
-<span id="cb23-1292"><a href="#cb23-1292" aria-hidden="true" tabindex="-1"></a>@bbcbiden</span>
-<span id="cb23-1293"><a href="#cb23-1293" aria-hidden="true" tabindex="-1"></a>@bbchamas</span>
-<span id="cb23-1294"><a href="#cb23-1294" aria-hidden="true" tabindex="-1"></a>@bbcpentagon</span>
-<span id="cb23-1295"><a href="#cb23-1295" aria-hidden="true" tabindex="-1"></a>@bbcsantos</span>
-<span id="cb23-1296"><a href="#cb23-1296" aria-hidden="true" tabindex="-1"></a>@bbctanks</span>
-<span id="cb23-1297"><a href="#cb23-1297" aria-hidden="true" tabindex="-1"></a>@bbctrump</span>
-<span id="cb23-1298"><a href="#cb23-1298" aria-hidden="true" tabindex="-1"></a>@cnnaffirmative</span>
-<span id="cb23-1299"><a href="#cb23-1299" aria-hidden="true" tabindex="-1"></a>@cnnballoon</span>
-<span id="cb23-1300"><a href="#cb23-1300" aria-hidden="true" tabindex="-1"></a>@cnnbiden</span>
-<span id="cb23-1301"><a href="#cb23-1301" aria-hidden="true" tabindex="-1"></a>@cnnhamas</span>
-<span id="cb23-1302"><a href="#cb23-1302" aria-hidden="true" tabindex="-1"></a>@cnnpentagon</span>
-<span id="cb23-1303"><a href="#cb23-1303" aria-hidden="true" tabindex="-1"></a>@cnnsantos</span>
-<span id="cb23-1304"><a href="#cb23-1304" aria-hidden="true" tabindex="-1"></a>@cnntanks</span>
-<span id="cb23-1305"><a href="#cb23-1305" aria-hidden="true" tabindex="-1"></a>@cnntrump</span>
-<span id="cb23-1306"><a href="#cb23-1306" aria-hidden="true" tabindex="-1"></a>@foxaffirmative</span>
-<span id="cb23-1307"><a href="#cb23-1307" aria-hidden="true" tabindex="-1"></a>@foxballoon</span>
-<span id="cb23-1308"><a href="#cb23-1308" aria-hidden="true" tabindex="-1"></a>@foxbiden</span>
-<span id="cb23-1309"><a href="#cb23-1309" aria-hidden="true" tabindex="-1"></a>@foxhamas</span>
-<span id="cb23-1310"><a href="#cb23-1310" aria-hidden="true" tabindex="-1"></a>@foxpentagon</span>
-<span id="cb23-1311"><a href="#cb23-1311" aria-hidden="true" tabindex="-1"></a>@foxsantos</span>
-<span id="cb23-1312"><a href="#cb23-1312" aria-hidden="true" tabindex="-1"></a>@foxtanks</span>
-<span id="cb23-1313"><a href="#cb23-1313" aria-hidden="true" tabindex="-1"></a>@foxtrump</span>
-<span id="cb23-1314"><a href="#cb23-1314" aria-hidden="true" tabindex="-1"></a>@nbcaffirmative</span>
-<span id="cb23-1315"><a href="#cb23-1315" aria-hidden="true" tabindex="-1"></a>@nbcballoon</span>
-<span id="cb23-1316"><a href="#cb23-1316" aria-hidden="true" tabindex="-1"></a>@nbcbiden</span>
-<span id="cb23-1317"><a href="#cb23-1317" aria-hidden="true" tabindex="-1"></a>@nbchamas</span>
-<span id="cb23-1318"><a href="#cb23-1318" aria-hidden="true" tabindex="-1"></a>@nbcpentagon</span>
-<span id="cb23-1319"><a href="#cb23-1319" aria-hidden="true" tabindex="-1"></a>@nbcsantos</span>
-<span id="cb23-1320"><a href="#cb23-1320" aria-hidden="true" tabindex="-1"></a>@nbctanks</span>
-<span id="cb23-1321"><a href="#cb23-1321" aria-hidden="true" tabindex="-1"></a>@nbctrump</span>
-<span id="cb23-1322"><a href="#cb23-1322" aria-hidden="true" tabindex="-1"></a>@nytaffirmative</span>
-<span id="cb23-1323"><a href="#cb23-1323" aria-hidden="true" tabindex="-1"></a>@nytballoon</span>
-<span id="cb23-1324"><a href="#cb23-1324" aria-hidden="true" tabindex="-1"></a>@nytbiden</span>
-<span id="cb23-1325"><a href="#cb23-1325" aria-hidden="true" tabindex="-1"></a>@nythamas</span>
-<span id="cb23-1326"><a href="#cb23-1326" aria-hidden="true" tabindex="-1"></a>@nytpentagon</span>
-<span id="cb23-1327"><a href="#cb23-1327" aria-hidden="true" tabindex="-1"></a>@nytsantos</span>
-<span id="cb23-1328"><a href="#cb23-1328" aria-hidden="true" tabindex="-1"></a>@nyttanks</span>
-<span id="cb23-1329"><a href="#cb23-1329" aria-hidden="true" tabindex="-1"></a>@nyttrump</span>
-<span id="cb23-1330"><a href="#cb23-1330" aria-hidden="true" tabindex="-1"></a>@nypaffirmative</span>
-<span id="cb23-1331"><a href="#cb23-1331" aria-hidden="true" tabindex="-1"></a>@nypballoon</span>
-<span id="cb23-1332"><a href="#cb23-1332" aria-hidden="true" tabindex="-1"></a>@nypbiden</span>
-<span id="cb23-1333"><a href="#cb23-1333" aria-hidden="true" tabindex="-1"></a>@nyphamas</span>
-<span id="cb23-1334"><a href="#cb23-1334" aria-hidden="true" tabindex="-1"></a>@nyppentagon</span>
-<span id="cb23-1335"><a href="#cb23-1335" aria-hidden="true" tabindex="-1"></a>@nypsantos</span>
-<span id="cb23-1336"><a href="#cb23-1336" aria-hidden="true" tabindex="-1"></a>@nyptanks</span>
-<span id="cb23-1337"><a href="#cb23-1337" aria-hidden="true" tabindex="-1"></a>@nyptrump</span>
-<span id="cb23-1338"><a href="#cb23-1338" aria-hidden="true" tabindex="-1"></a>@wsjaffirmative</span>
-<span id="cb23-1339"><a href="#cb23-1339" aria-hidden="true" tabindex="-1"></a>@wsjballoon</span>
-<span id="cb23-1340"><a href="#cb23-1340" aria-hidden="true" tabindex="-1"></a>@wsjbiden</span>
-<span id="cb23-1341"><a href="#cb23-1341" aria-hidden="true" tabindex="-1"></a>@wsjhamas</span>
-<span id="cb23-1342"><a href="#cb23-1342" aria-hidden="true" tabindex="-1"></a>@wsjpentagon</span>
-<span id="cb23-1343"><a href="#cb23-1343" aria-hidden="true" tabindex="-1"></a>@wsjsantos</span>
-<span id="cb23-1344"><a href="#cb23-1344" aria-hidden="true" tabindex="-1"></a>@wsjtanks</span>
-<span id="cb23-1345"><a href="#cb23-1345" aria-hidden="true" tabindex="-1"></a>@wsjtrump</span>
-<span id="cb23-1346"><a href="#cb23-1346" aria-hidden="true" tabindex="-1"></a>@wpaffirmative</span>
-<span id="cb23-1347"><a href="#cb23-1347" aria-hidden="true" tabindex="-1"></a>@wpballoon</span>
-<span id="cb23-1348"><a href="#cb23-1348" aria-hidden="true" tabindex="-1"></a>@wpbiden</span>
-<span id="cb23-1349"><a href="#cb23-1349" aria-hidden="true" tabindex="-1"></a>@wphamas</span>
-<span id="cb23-1350"><a href="#cb23-1350" aria-hidden="true" tabindex="-1"></a>@wppentagon</span>
-<span id="cb23-1351"><a href="#cb23-1351" aria-hidden="true" tabindex="-1"></a>@wpsantos</span>
-<span id="cb23-1352"><a href="#cb23-1352" aria-hidden="true" tabindex="-1"></a>@wptanks</span>
-<span id="cb23-1353"><a href="#cb23-1353" aria-hidden="true" tabindex="-1"></a>@wptrump</span>
-<span id="cb23-1354"><a href="#cb23-1354" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb23-1279"><a href="#cb23-1279" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>Look at these results over a period of time. Have news sources changed their writing styles or tones over the years?</span>
+<span id="cb23-1280"><a href="#cb23-1280" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-1281"><a href="#cb23-1281" aria-hidden="true" tabindex="-1"></a>::: {.callout-note collapse="true"}</span>
+<span id="cb23-1282"><a href="#cb23-1282" aria-hidden="true" tabindex="-1"></a><span class="fu">## Articles used in project</span></span>
+<span id="cb23-1283"><a href="#cb23-1283" aria-hidden="true" tabindex="-1"></a>@abcaffirmative</span>
+<span id="cb23-1284"><a href="#cb23-1284" aria-hidden="true" tabindex="-1"></a>@abcballoon</span>
+<span id="cb23-1285"><a href="#cb23-1285" aria-hidden="true" tabindex="-1"></a>@abcbiden</span>
+<span id="cb23-1286"><a href="#cb23-1286" aria-hidden="true" tabindex="-1"></a>@abchamas</span>
+<span id="cb23-1287"><a href="#cb23-1287" aria-hidden="true" tabindex="-1"></a>@abcpentagon</span>
+<span id="cb23-1288"><a href="#cb23-1288" aria-hidden="true" tabindex="-1"></a>@abcsantos</span>
+<span id="cb23-1289"><a href="#cb23-1289" aria-hidden="true" tabindex="-1"></a>@abctanks</span>
+<span id="cb23-1290"><a href="#cb23-1290" aria-hidden="true" tabindex="-1"></a>@abctrump</span>
+<span id="cb23-1291"><a href="#cb23-1291" aria-hidden="true" tabindex="-1"></a>@bbcaffirmative</span>
+<span id="cb23-1292"><a href="#cb23-1292" aria-hidden="true" tabindex="-1"></a>@bbcballoon</span>
+<span id="cb23-1293"><a href="#cb23-1293" aria-hidden="true" tabindex="-1"></a>@bbcbiden</span>
+<span id="cb23-1294"><a href="#cb23-1294" aria-hidden="true" tabindex="-1"></a>@bbchamas</span>
+<span id="cb23-1295"><a href="#cb23-1295" aria-hidden="true" tabindex="-1"></a>@bbcpentagon</span>
+<span id="cb23-1296"><a href="#cb23-1296" aria-hidden="true" tabindex="-1"></a>@bbcsantos</span>
+<span id="cb23-1297"><a href="#cb23-1297" aria-hidden="true" tabindex="-1"></a>@bbctanks</span>
+<span id="cb23-1298"><a href="#cb23-1298" aria-hidden="true" tabindex="-1"></a>@bbctrump</span>
+<span id="cb23-1299"><a href="#cb23-1299" aria-hidden="true" tabindex="-1"></a>@cnnaffirmative</span>
+<span id="cb23-1300"><a href="#cb23-1300" aria-hidden="true" tabindex="-1"></a>@cnnballoon</span>
+<span id="cb23-1301"><a href="#cb23-1301" aria-hidden="true" tabindex="-1"></a>@cnnbiden</span>
+<span id="cb23-1302"><a href="#cb23-1302" aria-hidden="true" tabindex="-1"></a>@cnnhamas</span>
+<span id="cb23-1303"><a href="#cb23-1303" aria-hidden="true" tabindex="-1"></a>@cnnpentagon</span>
+<span id="cb23-1304"><a href="#cb23-1304" aria-hidden="true" tabindex="-1"></a>@cnnsantos</span>
+<span id="cb23-1305"><a href="#cb23-1305" aria-hidden="true" tabindex="-1"></a>@cnntanks</span>
+<span id="cb23-1306"><a href="#cb23-1306" aria-hidden="true" tabindex="-1"></a>@cnntrump</span>
+<span id="cb23-1307"><a href="#cb23-1307" aria-hidden="true" tabindex="-1"></a>@foxaffirmative</span>
+<span id="cb23-1308"><a href="#cb23-1308" aria-hidden="true" tabindex="-1"></a>@foxballoon</span>
+<span id="cb23-1309"><a href="#cb23-1309" aria-hidden="true" tabindex="-1"></a>@foxbiden</span>
+<span id="cb23-1310"><a href="#cb23-1310" aria-hidden="true" tabindex="-1"></a>@foxhamas</span>
+<span id="cb23-1311"><a href="#cb23-1311" aria-hidden="true" tabindex="-1"></a>@foxpentagon</span>
+<span id="cb23-1312"><a href="#cb23-1312" aria-hidden="true" tabindex="-1"></a>@foxsantos</span>
+<span id="cb23-1313"><a href="#cb23-1313" aria-hidden="true" tabindex="-1"></a>@foxtanks</span>
+<span id="cb23-1314"><a href="#cb23-1314" aria-hidden="true" tabindex="-1"></a>@foxtrump</span>
+<span id="cb23-1315"><a href="#cb23-1315" aria-hidden="true" tabindex="-1"></a>@nbcaffirmative</span>
+<span id="cb23-1316"><a href="#cb23-1316" aria-hidden="true" tabindex="-1"></a>@nbcballoon</span>
+<span id="cb23-1317"><a href="#cb23-1317" aria-hidden="true" tabindex="-1"></a>@nbcbiden</span>
+<span id="cb23-1318"><a href="#cb23-1318" aria-hidden="true" tabindex="-1"></a>@nbchamas</span>
+<span id="cb23-1319"><a href="#cb23-1319" aria-hidden="true" tabindex="-1"></a>@nbcpentagon</span>
+<span id="cb23-1320"><a href="#cb23-1320" aria-hidden="true" tabindex="-1"></a>@nbcsantos</span>
+<span id="cb23-1321"><a href="#cb23-1321" aria-hidden="true" tabindex="-1"></a>@nbctanks</span>
+<span id="cb23-1322"><a href="#cb23-1322" aria-hidden="true" tabindex="-1"></a>@nbctrump</span>
+<span id="cb23-1323"><a href="#cb23-1323" aria-hidden="true" tabindex="-1"></a>@nytaffirmative</span>
+<span id="cb23-1324"><a href="#cb23-1324" aria-hidden="true" tabindex="-1"></a>@nytballoon</span>
+<span id="cb23-1325"><a href="#cb23-1325" aria-hidden="true" tabindex="-1"></a>@nytbiden</span>
+<span id="cb23-1326"><a href="#cb23-1326" aria-hidden="true" tabindex="-1"></a>@nythamas</span>
+<span id="cb23-1327"><a href="#cb23-1327" aria-hidden="true" tabindex="-1"></a>@nytpentagon</span>
+<span id="cb23-1328"><a href="#cb23-1328" aria-hidden="true" tabindex="-1"></a>@nytsantos</span>
+<span id="cb23-1329"><a href="#cb23-1329" aria-hidden="true" tabindex="-1"></a>@nyttanks</span>
+<span id="cb23-1330"><a href="#cb23-1330" aria-hidden="true" tabindex="-1"></a>@nyttrump</span>
+<span id="cb23-1331"><a href="#cb23-1331" aria-hidden="true" tabindex="-1"></a>@nypaffirmative</span>
+<span id="cb23-1332"><a href="#cb23-1332" aria-hidden="true" tabindex="-1"></a>@nypballoon</span>
+<span id="cb23-1333"><a href="#cb23-1333" aria-hidden="true" tabindex="-1"></a>@nypbiden</span>
+<span id="cb23-1334"><a href="#cb23-1334" aria-hidden="true" tabindex="-1"></a>@nyphamas</span>
+<span id="cb23-1335"><a href="#cb23-1335" aria-hidden="true" tabindex="-1"></a>@nyppentagon</span>
+<span id="cb23-1336"><a href="#cb23-1336" aria-hidden="true" tabindex="-1"></a>@nypsantos</span>
+<span id="cb23-1337"><a href="#cb23-1337" aria-hidden="true" tabindex="-1"></a>@nyptanks</span>
+<span id="cb23-1338"><a href="#cb23-1338" aria-hidden="true" tabindex="-1"></a>@nyptrump</span>
+<span id="cb23-1339"><a href="#cb23-1339" aria-hidden="true" tabindex="-1"></a>@wsjaffirmative</span>
+<span id="cb23-1340"><a href="#cb23-1340" aria-hidden="true" tabindex="-1"></a>@wsjballoon</span>
+<span id="cb23-1341"><a href="#cb23-1341" aria-hidden="true" tabindex="-1"></a>@wsjbiden</span>
+<span id="cb23-1342"><a href="#cb23-1342" aria-hidden="true" tabindex="-1"></a>@wsjhamas</span>
+<span id="cb23-1343"><a href="#cb23-1343" aria-hidden="true" tabindex="-1"></a>@wsjpentagon</span>
+<span id="cb23-1344"><a href="#cb23-1344" aria-hidden="true" tabindex="-1"></a>@wsjsantos</span>
+<span id="cb23-1345"><a href="#cb23-1345" aria-hidden="true" tabindex="-1"></a>@wsjtanks</span>
+<span id="cb23-1346"><a href="#cb23-1346" aria-hidden="true" tabindex="-1"></a>@wsjtrump</span>
+<span id="cb23-1347"><a href="#cb23-1347" aria-hidden="true" tabindex="-1"></a>@wpaffirmative</span>
+<span id="cb23-1348"><a href="#cb23-1348" aria-hidden="true" tabindex="-1"></a>@wpballoon</span>
+<span id="cb23-1349"><a href="#cb23-1349" aria-hidden="true" tabindex="-1"></a>@wpbiden</span>
+<span id="cb23-1350"><a href="#cb23-1350" aria-hidden="true" tabindex="-1"></a>@wphamas</span>
+<span id="cb23-1351"><a href="#cb23-1351" aria-hidden="true" tabindex="-1"></a>@wppentagon</span>
+<span id="cb23-1352"><a href="#cb23-1352" aria-hidden="true" tabindex="-1"></a>@wpsantos</span>
+<span id="cb23-1353"><a href="#cb23-1353" aria-hidden="true" tabindex="-1"></a>@wptanks</span>
+<span id="cb23-1354"><a href="#cb23-1354" aria-hidden="true" tabindex="-1"></a>@wptrump</span>
+<span id="cb23-1355"><a href="#cb23-1355" aria-hidden="true" tabindex="-1"></a>:::</span>
 </code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div></div></div></div></div>
 </div> <!-- /content -->
