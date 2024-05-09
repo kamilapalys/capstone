@@ -11,7 +11,6 @@ format:
     code-fold: true
     code-tools: true
     toc: true
-  pdf: default
 jupyter: python3
 ---
 
@@ -19,15 +18,15 @@ jupyter: python3
 ![Source: Unsplash](newspaper.jpg){fig-alt="A man reading a newspaper."}
 
 
-# Introduction
+# The Language of News Sources
 
-Everybody at some point has been at the center of a debate or has heard one about which news sources are trustworthy or not. These opinions are usually associated with the identification of a political party. A lot of the times, these opinions are largely subjective, but can they be confirmed or changed with a more technical analysis on news sources? What can we tell about each news source just based on their word choice? This project takes a closer look at the language that various news sources use and examines if these news sources really report on the same events in a different manner. This will be done through sentiment analysis and finally, creating classifiers to see if we can predict the source of a given article. 
+By now, you've surely heard many opinions and likely have one yourself about which news sources are trustworthy and not. These opinions are usually divided by political party identification. People's views on these matters are also largely subjective, but can they be confirmed or changed with a more technical analysis on news sources? What can we tell about each news source just based on their choice of words? This project takes a closer look at the language that various news sources use and examines if these sources really report on the same events in a different manner. This will be done through sentiment analysis and creating classifiers to see if we can determine the source of an article, given the article text. 
 
 # Data Collection
 
  Nine total news sites are studied for a mix of political affiliations, including CNN, The New York Times, The Washington Post, Fox News, New York Post, NBC News, The Wall Street Journal, BBC, and ABC News. Eight political events and topics from 2023 were chosen as the subjects for the articles to be studied for a higher potential for bias. For each topic, one article from each source was collected, making for a total of 72 articles. To ensure as little room for extraneous variables as possible, the articles for a particular topic across sources were chosen in a way so that they were published on the same day or as closely together in time as possible. This would mean that each source should have had the same information available to them when writing the article. The text from each article was collected through copying and pasting into its own text file. In addition, a string denoting each article's topic and source name was added to the end of each article's text file to be able to identify it. 
 
-::: {.callout-note collapse="true"}
+::: {.callout-note}
 ## Topics chosen for article selection
 * Indictment of Trump
 
@@ -48,12 +47,13 @@ Everybody at some point has been at the center of a debate or has heard one abou
 
 # Data Preprocessing
 
-The text had to go through a lot of preparation before it could be ready for analyzing. Functions were created to make this process faster for each article. One function accesses an article's text file and returns a string of all the text in there. Another function cleans the text, which includes making all text lowercase, removing punctuation, removing stopwords (words like "and," "the," etc.), and stemming words, if desired. Stemming words keeps only the root form of a word, removing suffixes so that words like "jumps" and "jumping" are both reduced to "jump." This is desired for some parts of the analysis in this project, but not others. 
+The text had to go through a lot of preparation before it could be ready for analyzing. Functions were created to make this process faster for each article. One function accesses an article's text file and returns a string of all the text in there. Another function cleans the text, which includes making all text lowercase, removing punctuation, removing stopwords (words like "and," "the," etc.), and stemming words, if desired. Stemming words keeps only the root form of a word, removing suffixes so that words like "jumps" and "jumping" are both reduced to "jump." This is desired for some parts of the analysis in this project, but not others. The idea to create the two preprocessing functions used and what they may include was taken from [Machine Learning Mastery](https://machinelearningmastery.com/deep-learning-bag-of-words-model-sentiment-analysis/) (see @preprocessing).
 
 ```{python}
 # don't show future warnings
 import warnings
-warnings.simplefilter(action='ignore', category=FutureWarning)
+#warnings.simplefilter(action='ignore', category=FutureWarning)
+warnings.filterwarnings("ignore")
 
 # initialize dictionary to be able to trace back a stemmed word to its original form
 stemmed_dict = {}
@@ -82,8 +82,10 @@ def clean_text(text, stem):
   # make the text lowercase
   text = text.lower()
   text = text.replace('—', ' ')
+  # the three below would be stemmed to "u", rather than "us" for example
   text = text.replace('u.s.', 'us')
   text = text.replace('u.k.', 'uk')
+  text = text.replace('u.n.', 'un')
   # convert to ascii characters
   text = text.encode("ascii", "ignore").decode()
   for chr in text:
@@ -117,7 +119,11 @@ def clean_text(text, stem):
 
 All of the article text collected is then transformed into multiple dataframe versions. One way of representing textual data within a dataframe is with binary values. In this case, each column is a token, or a word, that appears in any of the documents (articles) collected. Each row represents one document. The values are either a 0 or 1, denoting whether or not the token appears within the article. Another  dataframe representation has the values instead be the frequencies of each token within an article. Finally, a third dataframe is created with the Term Frequency-Inverse Document Frequency (TF-IDF) scores of the tokens within an article as the values. A TF-IDF score signifies the importance and uniqueness of a word within an article, as it compares to the remaining documents. Some of these dataframes may work better than others when it comes to the predictive modeling portion of the project and revealing patterns within the text of a news source. An example dataframe is shown below, with the TF-IDF scores of each stemmed token shown for the first five articles (rows).
 
-```{python, include=False}
+For the clustering part of the analysis, a new dataframe is also created with each row representing not just one article, but all articles from a single source. This is because we will be clustering entire sources and not individual articles. 
+
+```{python}
+#| include: false
+#| echo: false
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'
 from os import listdir
@@ -125,12 +131,6 @@ from os import listdir
 # we want to be in the capstone folder, not in the doc folder
 os.chdir("..")
 ```
-
-```{python}
-#| output: false
-pwd
-```
-
 
 ```{python}
 import pandas as pd
@@ -350,14 +350,7 @@ tfidf_df.drop(columns=['abcarticle', 'bbcarticle', 'cnnarticle', 'foxarticle', '
                         'santosarticle', 'tanksarticle', 'trumparticle'], inplace=True)
 
 tfidf_df.head()
-```
 
-
-# Exploratory Analysis
-
-To begin exploring this data, we may be interested in clustering news sources together to see which ones are most similar to each other. This can be done in a dendrogram using the TF-IDF scores of their tokens, for example. For this purpose, a new dataframe will have to be created with each row representing not just one article, but all articles from a single source, since we are clustering entire sources and not individual articles. 
-
-```{python}
 # create a list of strings where each string is all articles from one source (for dendogram)
 source_docs = []
 
@@ -423,11 +416,16 @@ tfidf_source_df.drop(['abcarticle', 'bbcarticle', 'cnnarticle', 'foxarticle',
 ```
 
 
-```{python}
-#| label: fig-dendrogram
-#| fig-cap: "A dendrogram clustering sources together using TF-IDF scores of their tokens."
+# Exploratory Analysis
 
-# create dendrogram with complete linkage from tfidf scores df, whose rows each represent one source
+## Clustering
+
+To begin exploring this data, we may be interested in clustering news sources together to see which ones are most similar to each other. This can be done in a dendrogram using the TF-IDF scores of their tokens, for example. 
+
+
+```{python}
+# create dendrogram with complete linkage from tfidf scores df,
+# whose rows each represent one source
 
 from scipy.cluster.hierarchy import dendrogram, linkage
 import matplotlib.pyplot as plt
@@ -442,7 +440,9 @@ plt.xticks(fontsize = 8)
 plt.show()
 ```
 
-According to the dendrogram @fig-dendrogram, ABC News and NBC News as well as BBC and Fox News are the two pairs of sources that are most similar to one another. Again, the articles were compared by looking at how similar their TF-IDF scores were for the same tokens. We also see that there aren't two distinct groups of sources clustered together, while we may have expected sources to be clustered together based on their political affiliation. However, it's important to keep in mind that these results are based on only the small sample of articles used for each source and may not be generalizable to the sources as wholes. It is also important to keep in mind that the similarity of these sources is solely being based on the vocabulary usage of each source and not any other factors.  
+According to the dendrogram, ABC News and NBC News as well as BBC and Fox News are the two pairs of sources that are most similar to one another. Again, the articles were compared by looking at how similar their TF-IDF scores were for the same tokens. We also see that there aren't two distinct groups of sources clustered together, while we may have expected sources to be clustered together based on their political affiliation. However, it's important to keep in mind that these results are based on only the small sample of articles used for each source and may not be generalizable to the sources as wholes. It is also important to keep in mind that the similarity of these sources is solely being based on the vocabulary usage of each source and not any other factors.  
+
+## Wordclouds
 
 Another thing that could be interesting to look at are the wordclouds for each source. On a wordcloud, the bigger the word is, the more frequently it appeared within the text. Looking at these could give a sense of the difference in vocabulary between each source. This is why topic coverage was kept the same across all sources, so that comparisons like these may be made to scope out differences in wording, given that the sources are each writing about the same topics.
 
@@ -462,22 +462,26 @@ def create_wordcloud(text, title):
     plt.tight_layout(pad=0)
     plt.imshow(wc)
 
-# loop through the list of strings, each one representing all articles' text from a given source, and create the wordcloud for it. 
+# loop through the list of strings, each one representing all articles'
+# text from a given source, and create the wordcloud for it. 
 for i in range(len(source_docs)):
     create_wordcloud(source_docs[i], tfidf_source_df.index[i])
 ```
 
 ::: {.callout-note collapse="true"}
 ## Looking at the wordclouds
-The words are not misspelled. Stemmed words were used for the creation of the wordclouds to avoid repetition of the same commonly appearing word in various tenses.
+The words are not misspelled. Stemmed words were used for the creation of the wordclouds to avoid repetition of common words that just appear in various tenses.
 :::
 
 The wordclouds for each source look mostly similar, with the most common word throughout them all being "said." This is unsurprising. The only exception here is Fox News, whose most frequently appearing word throughout all the articles is "Trump." Trump is a frequently appearing word for all sources because one of the topics chosen for the articles is explicitly about Trump. However, for Fox News, it is even more commonly used than the word "said." This is interesting, but this alone should not provoke any conclusions about this source being biased towards Trump, for example. All that this means is that "Trump" is the word that appeared the most frequently throughout Fox News' articles, which could potentially be because Fox News had the longest article about Trump. Longer articles will certainly have a higher count of words overall. This can be investigated further.
+
+### Does the length of an article have to do with how frequently a certain word appears?
 
 ```{python}
 # create a list of unstemmed article document texts
 # looping through all text files to apply preprocessing functions
 from plotnine import *
+from IPython.display import Image
 
 article_docs_unstemmed = []
 dir = os.listdir('data/text/')
@@ -489,8 +493,11 @@ for filename in dir:
         new_string = clean_text(article_string, 0)
         article_docs_unstemmed.append(new_string)
 
-# investigating why Fox News has Trump as most frequent word, to see if it's related to length of article 
+# investigating why Fox News has Trump as most frequent word,
+# to see if it's related to length of article 
 
+# create lists for the lengths of trump articles and the frequencies of word
+# "Trump" within the articles
 trump_article_lengths = []
 trump_word_counts = []
 
@@ -508,6 +515,8 @@ for article in article_docs_unstemmed:
 
 # let's do the same for the word "biden" in the biden articles and see if there are outliers 
 
+# create lists for the lengths of biden articles and the frequencies of word
+# "Biden" within the articles
 biden_article_lengths = []
 biden_word_counts = []
 
@@ -524,21 +533,20 @@ for article in article_docs_unstemmed:
     i += 1
 
 # create a df with sources, their trump article lengths, and the frequency of the word "trump"
-
 trump_words = pd.DataFrame(columns=['source', 'article_length', 'trump_word_count'])
 trump_words['source'] = tfidf_source_df.index
 trump_words['article_length'] = trump_article_lengths
 trump_words['trump_word_count'] = trump_word_counts
 trump_words
 
+# create a df with sources, their biden article lengths, and the frequency of the word "biden"
 biden_words = pd.DataFrame(columns=['source', 'article_length', 'biden_word_count'])
 biden_words['source'] = tfidf_source_df.index
 biden_words['article_length'] = biden_article_lengths
 biden_words['biden_word_count'] = biden_word_counts
 
 # create scatterplot of length of trump article vs frequency of the word "Trump"
-
-display(
+trump_scatter = (
 ggplot(data=trump_words,
        mapping=aes(x='article_length', y='trump_word_count', color='source'))
        + geom_point(show_legend=True)
@@ -549,8 +557,7 @@ ggplot(data=trump_words,
 )
 
 # create scatterplot of length of biden article vs frequency of the word "Biden"
-
-(
+biden_scatter = (
 ggplot(data=biden_words,
        mapping=aes(x='article_length', y='biden_word_count', color='source'))
        + geom_point(show_legend=True)
@@ -559,6 +566,14 @@ ggplot(data=biden_words,
               x='# of Words in Article',
               y='# of Times "Biden" Mentioned')
 )
+
+trump_scatter.save("trump_scatterplot.png", dpi=600)
+biden_scatter.save("biden_scatterplot.png", dpi=600)
+
+trump_img = 'trump_scatterplot.png'
+display(Image(url=trump_img))
+biden_img = 'biden_scatterplot.png'
+Image(url=biden_img)
 ```
 
 Above we used scatterplots to see how the length of the Trump articles are related to the frequency of the word "Trump" within them, by source. We do, in fact, see that the point for Fox News, corresponding to the article @foxtrump, is an outlier. Given its article length, it does mention Trump a lot more frequently than the Trump articles from other sources. Out of curiosity, we look at the same visualization for the word "Biden" in the Biden articles. Interestingly, Fox News again appears to be an outlier (see @foxbiden). Given its article length, it also mentions Biden a lot more frequently than the remaining sources. Now, it is not as easy to make assumptions about the partiality of Fox News just based on these word frequencies. They could be more telling of the writing styles of each source, or it could also merely be a result of using such a small sample size of articles.
@@ -573,55 +588,76 @@ from textblob import TextBlob
 
 scores_df = pd.DataFrame({'source':tfidf_df['article_source'], 'topic':tfidf_df['article_topic']})
 
+# shorten some source names to fit on graph later
 scores_df['source'] = np.where(scores_df['source'] == "The New York Times", "New York Times", scores_df['source'])
 scores_df['source'] = np.where(scores_df['source'] == "The Washington Post", "Washington Post", scores_df['source'])
 scores_df['source'] = np.where(scores_df['source'] == "The Wall Street Journal", "Wall Street Journal", scores_df['source'])
 
+# initialize list of polarity and subjectivity scores
 polarity_scores = []
 subjectivity_scores = []
 
+# calculate the scores for each article and add them to the corresponding list of scores
 for article in article_docs_unstemmed:
-    polarity_scores.append(round(TextBlob(" ".join(article.split()[:-2])).sentiment.polarity, 2))
-    subjectivity_scores.append(round(TextBlob(" ".join(article.split()[:-2])).sentiment.subjectivity, 2))
+    polarity_scores.append(round(TextBlob(" "
+    .join(article.split()[:-2]))
+    .sentiment.polarity, 2))
+    
+    subjectivity_scores.append(round(TextBlob(" "
+    .join(article.split()[:-2]))
+    .sentiment.subjectivity, 2))
 
+# add a column in the df for the polarity and subjectivity scores, based on the lists
 scores_df['polarity_score'] = polarity_scores
 scores_df['subjectivity_score'] = subjectivity_scores
 
+# initialize list of average polarity scores for each topic and source
 average_topic_polarity_scores = []
 average_source_polarity_scores = []
 
+# calculate the average polarity scores for each topic, add to that list
 for topic in scores_df['topic'].value_counts().index:
     mean_score = round(scores_df[scores_df['topic'] == topic]['polarity_score'].mean(), 2)
     average_topic_polarity_scores.append(mean_score)
 
+# calculate the average polarity scores for each source, add to that list
 for source in scores_df['source'].value_counts().index:
     mean_score = round(scores_df[scores_df['source'] == source]['polarity_score'].mean(), 2)
     for i in range(8):
         average_source_polarity_scores.append(mean_score)
 
+# add columns for the two lists above, average polarity scores by topic and source
 scores_df['average_polarity_for_topic'] = average_topic_polarity_scores * 9
 scores_df['average_polarity_for_source'] = average_source_polarity_scores
 
+# initialize lists for average subjectivity scores by topic and source
 average_topic_subjectivity_scores = []
 average_source_subjectivity_scores = []
 
+# calculate average subjectivity score by topic, add to that list
 for topic in scores_df['topic'].value_counts().index:
     mean_score = round(scores_df[scores_df['topic'] == topic]['subjectivity_score'].mean(), 2)
     average_topic_subjectivity_scores.append(mean_score)
 
+# calculate average subjectivity score by source, add to that list
 for source in scores_df['source'].value_counts().index:
     mean_score = round(scores_df[scores_df['source'] == source]['subjectivity_score'].mean(), 2)
     for i in range(8):
         average_source_subjectivity_scores.append(mean_score)
 
+# create columns for the two lists above, average subjectivity scores by topic and source
 scores_df['average_subjectivity_for_topic'] = average_topic_subjectivity_scores * 9
 scores_df['average_subjectivity_for_source'] = average_source_subjectivity_scores
 
+# create various new columns, for each score type's difference from the mean
+# for that topic or source
 scores_df['polarity_diff_from_topic_mean'] = scores_df['polarity_score'] - scores_df['average_polarity_for_topic']
 scores_df['subjectivity_diff_from_topic_mean'] = scores_df['subjectivity_score'] - scores_df['average_subjectivity_for_topic']
 scores_df['polarity_diff_from_source_mean'] = scores_df['polarity_score'] - scores_df['average_polarity_for_source']
 scores_df['subjectivity_diff_from_source_mean'] = scores_df['subjectivity_score'] - scores_df['average_subjectivity_for_source']
 
+# calculate how much on average each source deviates from the average polarity
+# or subjectivity score for that topic, create columns for those calculations
 sources_polarity_dev = []
 
 for source in scores_df['source'].value_counts().index:
@@ -639,7 +675,10 @@ for source in scores_df['source'].value_counts().index:
 scores_df['average_source_polarity_deviation_from_topic_mean'] = sources_polarity_dev
 scores_df['average_source_subjectivity_deviation_from_topic_mean'] = sources_subjectivity_dev
 
+# create column to indicate whether the polarity score is positive or negative,
+# to color graphs by later
 scores_df['polarity_sign'] = np.where(scores_df['polarity_score'] > 0, 'pos', 'neg')
+# create column for absolute value of the polarity score
 scores_df['polarity_magnitude'] = abs(scores_df['polarity_score'])
 
 scores_df.head(5)
@@ -648,29 +687,43 @@ scores_df.head(5)
 Since the documentation of the calculation of these scores is limited, one may wonder if they are somehow related. That is, are polarity scores related to subjectivity scores in some way? A scatterplot is created to see if a higher polarity score magnitude (absolute value) may mean a higher subjectivity score as well.
 
 ```{python}
-# to better understand subjectivity scores: are polarity scores and subjectivity scores correlated?
+# to better understand subjectivity scores: are polarity score magnitudes and subjectivity scores correlated?
 # this may suggest that polarity score is used in the calculation of a subjectivity score
+# colored by topic
 
-(
+pol_sub = (
 ggplot(scores_df, aes(x="polarity_magnitude", y="subjectivity_score", color='topic'))
 + geom_point()
 + labs(x="Absolute Value of Polarity Score",
        y='Subjectivity Score',
        title='Are Polarity Score Magnitudes Correlated with Subjectivity Scores?')
 )
+
+pol_sub.save("scores_correlation.png", dpi=600)
+
+pol_sub_img = 'scores_correlation.png'
+Image(url=pol_sub_img)
 ```
 
 There does not appear to be a linear or any other sort of relationship between the polarity and subjectivity scores of the articles used in this project. However, the graph does show almost a cluster of points of the same color, telling that the articles about the Supreme Court ruling against affirmative action tend to have stronger polarity scores. The same graph may be visualized colored by source instead, to see if any clusters of sources are observed.
 
 
 ```{python}
-(
+# scatterplot to see if polarity magnitudes and subjectivity scores are
+# correlated, colored by source
+pol_sub_2 = (
 ggplot(scores_df, aes(x="polarity_magnitude", y="subjectivity_score", color='source'))
 + geom_point()
 + labs(x="Absolute Value of Polarity Score",
        y='Subjectivity Score',
        title='Are Polarity Score Magnitudes Correlated with Subjectivity Scores?')
 )
+
+# save image
+pol_sub_2.save("scores_correlation2.png", dpi=600)
+
+pol_sub_img2 = 'scores_correlation2.png'
+Image(url=pol_sub_img2)
 ```
 
 Something that can be observed on the scatterplot above is that the green dots, both for CNN and Fox News, tend to be on the lower half of the plot, meaning their articles tend to have lower subjectivity scores. In addition, the dark blue dots, representing The New York Times, tend to be on the upper half, signifying higher subjectivity scores for its articles. 
@@ -684,6 +737,7 @@ from pandas.api.types import CategoricalDtype
 polarity_devs = pd.DataFrame({'source':scores_df['source'].value_counts().index, 
                               'polarity_dev':scores_df[scores_df['topic'] == 'Chinese Surveillance Balloon']\
                                 ['average_source_polarity_deviation_from_topic_mean']})
+# create a column denoting if deviation is above or below mean to color graph by later
 polarity_devs['sign'] = np.where(polarity_devs['polarity_dev'] > 0, 'pos', 'neg')
 
 polarity_devs = polarity_devs.reindex(polarity_devs['polarity_dev'].abs().sort_values(ascending=False).index)
@@ -705,20 +759,28 @@ polarity_devs
 
 colors = {"pos":'#ffbf00', "neg":'#b7141c'}  
 
-(
+score_dev = (
 ggplot(polarity_devs, aes(x="source", y="polarity_dev", fill="sign"))
 + geom_col(stat="identity")
-+ labs(x="Source", y='Average Article Polarity Score Deviation', title='Average Source Polarity Score Deviations from Mean')
++ labs(x="Source", y='Average Article Polarity Score Deviation',
+        title='Average Source Polarity Score Deviations from Mean')
 + theme(figure_size = (10, 4), axis_text_x=element_text(size=7, face='bold'), 
         title = element_text(size=13),legend_position = "none")
 + scale_fill_manual(values = colors)
 )
+
+# save image
+score_dev.save("polarity_score_dev.png", dpi=300)
+
+pol_score_dev_img = 'polarity_score_dev.png'
+Image(url=pol_score_dev_img)
 ```
 
 The visualization above tells us that The New York Times articles tend to be the most negative on average. They have the largest deviations from the topic's average polarity scores, which may indicate stronger wording. Each individual may infer what they wish with these results, but definitive conclusions should not be drawn from them, which will be explained a bit later. ABC News tends to write their articles more positive than average for the topics' mean polarity scores. BBC's articles are the closest to average polarity scores for each topic. The polarity scores may be viewed individually for the set of articles of any topic. Below, we see the polarity scores for the articles about the ruling against affirmative action. The New York Times was the only source with a negative polarity score for this topic, which could already be suggestive of its political views. 
 
 ```{python}
-(
+# create bar chart of polarity scores of articles about a specific topic
+pol_affirm = (
 ggplot(scores_df[scores_df['topic']=="Supreme Court Ruling on Affirmative Action"],
        aes(x="reorder(source, -polarity_score)", y="polarity_score", fill="polarity_sign"))
 + geom_col(stat="identity")
@@ -727,6 +789,12 @@ ggplot(scores_df[scores_df['topic']=="Supreme Court Ruling on Affirmative Action
         title = element_text(size=13), legend_position = "none")
 + scale_fill_manual(values = colors)
 )
+
+# save image
+pol_affirm.save("polarity_affirmative_articles.png", dpi=300)
+
+pol_affirm_img = 'polarity_affirmative_articles.png'
+Image(url=pol_affirm_img)
 ```
 
 Now let's look at a comparison of each source's average subjectivity scores. These do not need to be broken up by topic, since the scale for the score is [0,1].
@@ -752,18 +820,24 @@ source_avg_subj
 
 # bar chart showing avg subjectivity per source
 
-(
+sub = (
 ggplot(source_avg_subj, aes(x="source", y="avg_subj"))
 + geom_col(stat="identity", fill="#ffa140")
 + labs(x='Source', y='Average Subjectivity Score', title='Average Subjectivity Score by Source')
 + theme(figure_size = (10, 4), axis_text_x=element_text(size=8.5, face='bold'), 
         title = element_text(size=13), legend_position = "none")
 )
+
+# save image
+sub.save("avg_subjectivity.png", dpi=300)
+
+sub_img = 'avg_subjectivity.png'
+Image(url=sub_img)
 ```
 
 The bar chart above shows that Fox News has the lowest subjectivity scores on average, while the New York Times has the highest subjectivity score on average. Surprised? Do these results align with your opinions or what you commonly hear about these sources? Regardless, it is important to remember what these scores mean exactly and what we are able to reasonably infer from these results. The package that computes these scores has limited documentation, so the exact formulas are not known for the computation of a polarity or subjectivity score of a text. Each individual word has a scoring of its own and is marked as positive or negative, and the overall polarity score is some sort of aggregation of these scores. This does limit us in the interpretation of the scores. Moreover, this is only a small sample of articles collected from each source and their insights should not represent a source as a whole. It is entirely possible that a larger sample of articles from a wider variety of topics could yield different results.
 
-To further analyze the polarity scores, we may want to know which ones are outliers. So, for each topic, the interquartile range formula is used to find any articles with an outlier score. 
+To further analyze the polarity scores, we may want to know which ones are outliers. So, for each topic, the interquartile range formula is used to find any articles with an outlier score. The articles and their polarity scores that were identified as outliers are shown in the table below. 
 
 ```{python}
 # create a list of tuples that contain articles that have an outlier polarity score,
@@ -771,22 +845,42 @@ To further analyze the polarity scores, we may want to know which ones are outli
 
 articles =[]
 
+# check for outliers topic by topic
 for topic in scores_df['topic'].value_counts().index:
     topic_df = scores_df[scores_df['topic'] == topic]
+    average_polarity = topic_df['average_polarity_for_topic'].iloc[0]
+    # use IQR formula to detect outliers
     Q1 = topic_df['polarity_score'].describe()[4]
     Q3 = topic_df['polarity_score'].describe()[6]
     IQR = Q3-Q1
     lower = Q1-(1.5*IQR)
     upper = Q3+(1.5*IQR)
-    # the line below would print the lower and upper bounds for non-outliers for each topic
+    # the line below would print the lower and upper bounds for non-outliers
+    #   for each topic
     #print(topic, "lower bound:", round(lower, 2), "upper bound:", round(upper,2))
+    # check if an article has an outlier polarity score (beyond lower/upper limits)
     for row in topic_df.itertuples():
         if row.polarity_score < lower or row.polarity_score > upper:
-            articles.append((row.source, row.topic, row.polarity_score))
+            articles.append((row.source, row.topic, row.polarity_score, average_polarity))
 
-print("The source, topic, and polarity score of articles with an outlier polarity score:")
+# create lists about outlier article information to create dataframe for them
+outlier_source_list = []
+outlier_topic_list = []
+outlier_polarity_list = []
+average_polarity_list = []
+
 for article in articles:
-  print(article)
+  outlier_source_list.append(article[0])
+  outlier_topic_list.append(article[1])
+  outlier_polarity_list.append(article[2])
+  average_polarity_list.append(article[3])
+
+# display in dataframe the articles with an outlier polarity score
+outlier_df = pd.DataFrame({'Source':outlier_source_list,
+                           'Topic':outlier_topic_list,
+                           'Polarity Score':outlier_polarity_list,
+                           'Average Polarity for Topic':average_polarity_list})
+display(outlier_df)
 ```
 
 From looking at outlier polarity scores, the articles about the Supreme Court ruling against affirmative action have several outlier scores, both positive and negative. This could be telling of the major difference in opinions regarding this topic. As for sources, The Wall Street Journal had the most amount of articles with an outlier polarity score.
@@ -795,17 +889,18 @@ From looking at outlier polarity scores, the articles about the Supreme Court ru
 
 ## Naive Bayes
 
-Now, for the main part of this project, a few different classifiers will be used to attempt to predict the source of a given article. If this can be done with high accuracy, it will show that the wording alone of the studied sources is distinct enough to be an identifying factor. First, Naive Bayes classifiers will be trained and tested on the articles included. Six topics will be used for training, and two for testing. As many classifiers will be created as needed (28) in order to use every possible split of topics for the training and testing sets. In addition, this process will be repeated for each of the three dataframes created (using binary values, frequencies, and TF-IDF scores of tokens) for a total of 84 Naive Bayes classifiers. This means that the models will be trained on the tokens (words) that appear in each model and their values (one of the three possible mentioned).
+Now, for the main part of this project, a few different classifiers will be used to attempt to predict the source of a given article. If this can be done with high accuracy, it will show that the wording alone of the studied sources is distinct enough to be an identifying factor. First, Naive Bayes classifiers will be trained and tested on the articles included. Six topics will be used for training, and two for testing. As many classifiers will be created as needed (28) in order to use every possible split of topics for the training and testing sets. In addition, this process will be repeated for each of the three dataframes created (using binary values, frequencies, and TF-IDF scores of tokens) for a total of 84 Naive Bayes classifiers. This means that the models will be trained on the tokens (words) that appear in each model and their values (one of the three possible mentioned). The average accuracy scores of Naive Bayes models trained on any of the three value types are displayed in the table below. [Data Camp](https://www.datacamp.com/tutorial/naive-bayes-scikit-learn) was used as a source to code the Naive Bayes model, including fitting the model and making predictions (see @nb_confusion).
 
 ```{python}
+# import libraries
 from sklearn.naive_bayes import MultinomialNB
 from sklearn import metrics  
 from sklearn.metrics import accuracy_score,confusion_matrix,ConfusionMatrixDisplay,f1_score
 
+# initialize a dictionary that will show the best accuracy for each kind of classifier used
 best_accuracies_by_cf = {}
 
-# function to apply Naive Bayes model using different holdout article topics each time
-
+# define list of topics to later choose training/testing sets with
 topic_list = topic_choices  = [
       "Supreme Court Ruling on Affirmative Action"
     , "Chinese Surveillance Balloon"
@@ -817,7 +912,12 @@ topic_list = topic_choices  = [
     , "Trump's Indictment"
 ]
 
+# initialize lists that will later be used to create a df showing the
+# average model accuracy for each type of value the models were trained on
 average_accuracies = []
+value_types = []
+
+# function to apply Naive Bayes model using different holdout article topics each time
 
 def naive_bayes_cf(df, value_type):
     '''Takes in a dataframe of tokens and the desired values 
@@ -827,15 +927,21 @@ def naive_bayes_cf(df, value_type):
     of Multinomial Naive Bayes classifiers, one for each
     possible holdout set of two article topics.'''
 
+    # initialize lists where each model's accuracy/f1 score will be appended
+    # to later be able to determine the min/max of each
     accuracy_list = []
     f1_score_list = []
 
+    # loops to create a model with each combination of a testing set
+    # consisting of two topics
     for i in range(len(topic_list)):
         for j in range(i+1, len(topic_list)):
             # uncomment lines below to print the holdout topics for the model
             #print("Holdout article topics: ")
             #print(topic_list[i])
             #print(topic_list[j])
+
+            # split into training/testing df's for predictor and target variables
             X_train_df = df[(df['article_topic'] != topic_list[i]) & 
                     (df['article_topic'] != topic_list[j])].iloc[:, :-2]
             X_test_df = df[(df['article_topic'] == topic_list[i]) | 
@@ -844,54 +950,78 @@ def naive_bayes_cf(df, value_type):
                     (df['article_topic'] != topic_list[j])]['article_source']
             y_test_df = df[(df['article_topic'] == topic_list[i]) | 
                     (df['article_topic'] == topic_list[j])]['article_source']
+            
+            # transform the training/testing df's to arrays
             X_train = X_train_df.to_numpy()
             X_test = X_test_df.to_numpy()
             y_train = y_train_df.to_numpy()
             y_test = y_test_df.to_numpy()
 
+            # create classifier object and train it on our training data
             nb_model = MultinomialNB()
             nb_model.fit(X_train, y_train)
 
+            # make predictions on our testing set, output as an array
             predictions_array = nb_model.predict(X_test)
 
+            # turn the array with predicted sources into a list
             prediction_list = []
 
             for pred in predictions_array:
                 prediction_list.append(pred)
 
+            # create a list of the true sources
             actuals_list = []
 
             for source in y_test:
                 actuals_list.append(source)
 
+            # create a dataframe from the two lists created above to show the actual vs predicted sources
             preds_actuals_df = pd.DataFrame({'Actual':actuals_list, 'Predicted':prediction_list})
 
-            #display(preds_actuals_df)
+            # uncomment line below if want to see the dataframe of actual vs predicted sources for each model
+            # display(preds_actuals_df)
 
+            # calculate performance metrics
             accuracy = round(accuracy_score(predictions_array, y_test), 2)
             f1 = round(f1_score(predictions_array, y_test, average="weighted"), 2)
 
+            # add the model's accuracy/f1 score to the list of accuracies/f1 scores
             accuracy_list.append(accuracy)
+            f1_score_list.append(f1)
+
+            # check if this model's accuracy is better than the current best accuracy
+            # for Naive Bayes, and if it is, then set its accuracy to be the
+            # value for Naive Bayes in the dictionary initialized earlier
             try:
                 if accuracy > best_accuracies_by_cf['Naive Bayes']:
                     best_accuracies_by_cf['Naive Bayes'] = accuracy
             except:
                 best_accuracies_by_cf['Naive Bayes'] = accuracy
-            f1_score_list.append(f1)
 
             # uncomment lines below to display results of every model
             #print("Accuracy of Multinomial Naive Bayes Model:", accuracy)
             #print("F1 score of Multinomial Naive Bayes Model:", f1)
             #print("\n\n")
 
+    # initialize a cumulative sum of accuracies for models trained
+    # on the dataframe/value types defined in the function
     cum_acc = 0
 
+    # add each model's accuracy to the cumulative sum
     for acc in accuracy_list:
         cum_acc += acc
 
-    average_accuracies.append((cum_acc/len(accuracy_list), value_type))
+    # calculate the average accuracy for a model trained on this
+    # dataframe/value type and add it to the list of average accuracies
+    average_accuracies.append(round(cum_acc/len(accuracy_list), 2))
 
-    # uncomment lines below if interested in displaying min/max accuracy scores for the models trained within the function
+    # add the value type used to train these models to the list of value
+    # types, which will be used to create a df of average accuracies by value type
+    value_types.append(value_type)
+
+    # uncomment lines below if interested in displaying min/max
+    #   accuracy scores for the models trained within the function
     #print(f"Minimum Accuracy Score of any Multinomial Naive Bayes Model using {value_type}:",
     #    min(accuracy_list))
     #print(f"Maximum Accuracy Score of any Multinomial Naive Bayes Model using {value_type}:",
@@ -899,32 +1029,46 @@ def naive_bayes_cf(df, value_type):
     #print(f"Maximum F1 Score of any Multinomial Naive Bayes Model using {value_type}:",
     #    max(f1_score_list))
 
+# create a list of all the dataframes/value types we want to train our classifiers on
 dfs = [(tfidf_df, "TFIDF Score"), (binary_df, "Binary Values"), (freq_df, "Frequencies")]
 
+# loop through the list above to create many models
 for df in dfs:
     naive_bayes_cf(df[0], df[1])
+
+# create a dataframe showing each value type Naive Bayes models were trained on and the average accuracies for each
+nb_results_df = pd.DataFrame({'Values Trained On':value_types, 'Average Accuracy':average_accuracies})
+
+display(nb_results_df)
 ```
 
-```{python}
-for entry in average_accuracies:
-  print(f'Average accuracy for Naive Bayes models that were trained on {entry[1]}:', round(entry[0], 2))
-```
 
-For the series of Naive Bayes models created, the maximum accuracy score reached for any model is 44%. This was for a model trained on TF-IDF scores. This accuracy does not seem very high. Even the best of these models' predictions are wrong more often than they are right. However, since there are nine possible predictions that could be made (nine different sources), a random guess would expect to result in a 11% accuracy rate on average. This happens to also be the minimum accuracy score of any of these models. Therefore, all of these classifiers are still just as good or better than guessing which source an article comes from, simply given its text. 
+For the series of Naive Bayes models created, the maximum accuracy score reached for any model is 44%. This was for a model trained on TF-IDF scores. The average accuracy scores for Naive Bayes models trained on the different value types of tokens range between 22-29%. These accuracy scores do not seem very high. Even the best of these models' predictions are wrong more often than they are right. However, since there are nine possible predictions that could be made (nine different sources), a random guess would expect to result in a 11% accuracy rate on average. This happens to also be the minimum accuracy score of any of these models. Therefore, all of these classifiers are still just as good or better than guessing which source an article comes from, simply given its text. 
 
 ## Random Forest
 
-The same will be repeated with Random Forest models. In addition to using various holdout topic sets and dataframes to train and test these models on, a couple parameters will also be tested to see which ones result in the best performing model. 
+The same will be repeated with Random Forest models. In addition to using various holdout topic sets and dataframes to train and test these models on, a couple parameters will also be tested to see which ones result in the best performing model. Again, a table below is displayed with the average accuracy scores of models trained on a particular dataframe (value types) and set of parameters.
 
 ```{python}
+# import library
 from sklearn.ensemble import RandomForestClassifier
 
+# initialize a dictionary that will hold the parameters that lead to best
+# accuracies of a Random Forest Model
 best_rf_params = {}
-best_model_pred_vs_actuals = pd.DataFrame()
+
+# initialize lists that will be used to create a dataframe showing the
+# average accuracies of Random Forest models trained on a particular
+# dataframe and with a particular set of parameters
 average_accuracies = []
+value_types = []
+n_estimators = []
+criterions = []
+
 best_accuracies_by_cf['Random Forest'] = 0
 
-
+# create a function to apply a Random Forest model using different
+# holdout sets and given parameters and value types to train on
 def random_forest_cf(df, value_type, n, crit):
     '''Takes in a dataframe of tokens and the desired values 
     to train the model on (i.e. tfidf scores, frequencies)
@@ -934,14 +1078,23 @@ def random_forest_cf(df, value_type, n, crit):
     and outputs performance metrics of a series of RF classifiers, 
     one for each possible holdout set of two article topics.'''
 
+    # initalize lists for accuracy/f1 scores to later be able to determine the min/max of each 
     accuracy_list = []
     f1_score_list = []
 
+    # loops to create a model with each combination of a testing set
+    # consisting of two topics 
     for i in range(len(topic_list)):
         for j in range(i+1, len(topic_list)):
+            # uncomment lines below to print the holdout topics
+            #   and parameters used for the model
             # print("Holdout article topics: ")
             # print(topic_list[i])
             # print(topic_list[j])
+            # print("n_estimators and criterion:")
+            # print(n, crit)
+
+            # split into training/testing df's for predictor and target variables
             X_train_df = df[(df['article_topic'] != topic_list[i]) & 
                     (df['article_topic'] != topic_list[j])].iloc[:, :-2]
             X_test_df = df[(df['article_topic'] == topic_list[i]) | 
@@ -950,34 +1103,52 @@ def random_forest_cf(df, value_type, n, crit):
                     (df['article_topic'] != topic_list[j])]['article_source']
             y_test_df = df[(df['article_topic'] == topic_list[i]) | 
                     (df['article_topic'] == topic_list[j])]['article_source']
+
+            # transform the training/testing df's to arrays
             X_train = X_train_df.to_numpy()
             X_test = X_test_df.to_numpy()
             y_train = y_train_df.to_numpy()
             y_test = y_test_df.to_numpy()
 
+            # create a classifier object and train it on the training data
             rf_model = RandomForestClassifier(n_estimators = n, criterion=crit, random_state=42)
             rf_model.fit(X_train, y_train)
-
+            
+            # make predictions on our testing set, output as an array
             predictions_array = rf_model.predict(X_test)
 
+            # turn the array with predicted sources into a list
             prediction_list = []
 
             for pred in predictions_array:
                 prediction_list.append(pred)
 
+            # create a list of the true sources
             actuals_list = []
 
             for source in y_test:
                 actuals_list.append(source)
 
+            # create a dataframe from the two lists above to show the actual
+            # vs predicted sources for this model
             preds_actuals_df = pd.DataFrame({'Actual':actuals_list, 'Predicted':prediction_list})
 
-            #display(preds_actuals_df)
+            # uncomment line below if want to see the dataframe of actual
+            #   vs predicted sources for each model
+            # display(preds_actuals_df)
 
+            # calculate performance metrics
             accuracy = round(accuracy_score(predictions_array, y_test), 2)
             f1 = round(f1_score(predictions_array, y_test, average="weighted"), 2)
 
+            # add the accuracy/f1 scores for this model to the lists of accuracy/f1 scores 
             accuracy_list.append(accuracy)
+            f1_score_list.append(f1)
+
+            # check if this model's accuracy is better than the current best 
+            # accuracy for any Random Forest model, and if it is, then set its 
+            # accuracy to be the value for Random Forest in the dictionary we 
+            # initialized earlier and update the best parameters dictionary
             try:
                 if accuracy > best_accuracies_by_cf['Random Forest']:
                     best_accuracies_by_cf['Random Forest'] = accuracy
@@ -990,95 +1161,103 @@ def random_forest_cf(df, value_type, n, crit):
                 best_accuracies_by_cf['Random Forest'] = accuracy
                 best_rf_params['n_estimators'] = n
                 best_rf_params['criterion'] = crit 
-            f1_score_list.append(f1)
 
+            # uncomment lines below if want to see the performance metrics
+            #   for the model
+            # print("Accuracy of Random Forest Model:", accuracy)
+            # print("F1 score of Random Forest Model:", f1)
+            # print("\n\n")
+
+    # initialize a cumulative sum of accuracies for models trained on the
+    # dataframe/value types defined in the function
     cum_acc = 0
 
+    # add each model's accuracy to the cumulative sum
     for acc in accuracy_list:
         cum_acc += acc
 
-    average_accuracies.append((cum_acc/len(accuracy_list), value_type, n, crit))
+    # calculate the average accuracy of a model trained on this dataframe/value
+    # type and with these parameters and add it to the list of average accuracies
+    average_accuracies.append(round(cum_acc/len(accuracy_list), 2))
 
-            #print("Accuracy of Random Forest Model:", accuracy)
-            #print("F1 score of Random Forest Model:", f1)
-            #print("\n\n")
+    # add the value type used for training this model and its parameters to
+    # their lists, which will be used to create a dataframe of average
+    # accuracies for each of these options
+    value_types.append(value_type)
+    n_estimators.append(n)
+    criterions.append(crit)
 
-    # uncomment lines below if interested in displaying min/max accuracies of models trained within this function.
+    # uncomment lines below if interested in displaying min/max accuracies of
+    #   models trained within this function.
     # print(f"Minimum Accuracy Score of any Random Forest Model with {n} n_estimators, {crit} criterion, using {value_type}:",
     #      min(accuracy_list))
-    # print(f"Maximum Accuracy Score of any Random Forest Model with {n} n_estimators, {crit} criterion, using {value_type}:",
-    #   max(accuracy_list))
+    # print(f"Maximum Accuracy Score of any Random Forest Model with {n} n_estimators, {crit} criterion, using {value_type}:", max(accuracy_list))
     # print(f"Maximum F1 Score of any Random Forest Model with {n} n_estimators, {crit} criterion, using {value_type}:",
     #       max(f1_score_list))
     # print("\n")
 
+# specify all parameters that we want to test models using
 crits = ['gini', 'entropy']
 n_ests = [10, 100, 200]
 
+# loop through the desired dataframes and parameters to create models with and
+# create multiple models with various holdout sets using the function defined above
 for df in dfs:
     for crit in crits:
         for n in n_ests:
             random_forest_cf(df[0], df[1], n, crit)
 
-```
+# create a dataframe showing each value type that Random Forest models were trained on,
+# each parameter used, and the average accuracies for each of these combinations
+rf_results_df = pd.DataFrame({'Values Trained On':value_types, 'n_estimators':n_estimators, 'criterion':criterions, 'Average Accuracy': average_accuracies}).sort_values('Average Accuracy', ascending=False)
 
-```{python}
-for entry in average_accuracies:
-  print(f'Average accuracy for Random Forest models trained on {entry[1]}, using {entry[2]} n_estimators, and {entry[3]} criterion:', round(entry[0], 2))
+rf_results_df = rf_results_df.reset_index(drop=True)
 
-# if interested in displaying best parameters for random forest models, uncomment line below
+display(rf_results_df)
+# if interested in displaying best parameters and holdout set for random forest models,
+# uncomment line below. there could have also been other parameters
+# and holdout sets that led to the same accuracy score.
 # best_rf_params
 ```
 
-
-The best random forest classifier had an accuracy score of 78%. This was using the dataframe with binary values for tokens, 200 n_estimators, and gini criterion. Using these same parameters and the same dataframe, the worst of these models (with a different holdout set) had an accuracy score of 22%. Still, a lot of the models' results can be considered very good for our purposes! Using the right parameters and training/testing sets, we could correctly predict the source of an article about three out of every four times. As seen, however, even using the best parameters in the random forest models, the accuracy can wildly differ (22-78%) depending on which topics were used for training and testing. This is why the average accuracies are also printed above for each combination of dataframe used and n_estimators and criterion parameters. It is reasonable to assume that this highly varied accuracy score that depends on the training/testing split could be remedied with a much larger sample of articles in the future, which could provide a rich set for both training and testing data. 
+The best random forest classifier had an accuracy score of 61%. A few models with various parameters and holdout sets resulted in this accuracy score. The same parameters that have resulted in a model with a 61% accuracy have also resulted in models with an accuracy score as low as 11% (with a different holdout set). A few of the models that performed the worst (with worse parameters) had an accuracy score of 0%. As seen, using even the best parameters in the random forest models, the accuracy can wildly differ (11-61%) depending on which topics were used for training and testing. This is why the average accuracies are also displayed above for each combination of dataframe used and n_estimators and criterion parameters. It is reasonable to assume that this highly varied accuracy score that depends on the training/testing split could be remedied with a much larger sample of articles in the future, which could provide a rich set for both training and testing data. Still, a lot of the models' results can be considered good for our purposes! Using the right parameters and training/testing sets, we could correctly predict the source of an article about three out of every five times. It is worth pointing out that our goal here wasn't necessarily to determine with certainty which source a given article text comes from. Instead, the point of looking at the accuracies of these models is to be able to conclude whether the information about the words in an article is useful in determining the source of the article. I think we can say that this has been achieved. The vast majority of the time, the models had an accuracy score that was above the expected accuracy if one were to guess the source of an article (1/9, or 11%). This tells us that the wording between sources differs significantly enough to help us identify the source of an article. 
 
 ```{python}
 # create confusion matrix of model with best parameters
 
-X_train_df = binary_df[(binary_df['article_topic'] != 'The Deadliest Attack by Hamas') & 
-        (binary_df['article_topic'] != 'Pentagon Documents Leak')].iloc[:, :-2]
-X_test_df = binary_df[(binary_df['article_topic'] == 'The Deadliest Attack by Hamas') | 
-        (binary_df['article_topic'] == 'Pentagon Documents Leak')].iloc[:, :-2]
-y_train_df = binary_df[(binary_df['article_topic'] != 'The Deadliest Attack by Hamas') & 
-        (binary_df['article_topic'] != 'Pentagon Documents Leak')]['article_source']
-y_test_df = binary_df[(binary_df['article_topic'] == 'The Deadliest Attack by Hamas') | 
-        (binary_df['article_topic'] == 'Pentagon Documents Leak')]['article_source']
+# set the training/testing datasets
+X_train_df = tfidf_df[(tfidf_df['article_topic'] != 'U.S. and Germany Send Tanks to Ukraine') & 
+        (tfidf_df['article_topic'] != 'Pentagon Documents Leak')].iloc[:, :-2]
+X_test_df = tfidf_df[(tfidf_df['article_topic'] == 'U.S. and Germany Send Tanks to Ukraine') | 
+        (tfidf_df['article_topic'] == 'Pentagon Documents Leak')].iloc[:, :-2]
+y_train_df = tfidf_df[(tfidf_df['article_topic'] != 'U.S. and Germany Send Tanks to Ukraine') & 
+        (tfidf_df['article_topic'] != 'Pentagon Documents Leak')]['article_source']
+y_test_df = tfidf_df[(tfidf_df['article_topic'] == 'U.S. and Germany Send Tanks to Ukraine') | 
+        (tfidf_df['article_topic'] == 'Pentagon Documents Leak')]['article_source']
+
+# convert training/testing datasets to arrays 
 X_train = X_train_df.to_numpy()
 X_test = X_test_df.to_numpy()
 y_train = y_train_df.to_numpy()
 y_test = y_test_df.to_numpy()
 
+# train the Random Forest model with the best parameters
 rf_model = RandomForestClassifier(n_estimators = 200, criterion="gini", random_state=42)
 rf_model.fit(X_train, y_train)
-y_score = rf_model.predict_proba(X_test)
 
+# make source predictions
 predictions_array = rf_model.predict(X_test)
 
-prediction_list = []
-for pred in predictions_array:
-        prediction_list.append(pred)
-
-actuals_list = []
-
-for source in y_test:
-        actuals_list.append(source)
-
-preds_actuals_df = pd.DataFrame({'Actual':actuals_list, 'Predicted':prediction_list})
-
-accuracy = accuracy_score(predictions_array, y_test)
-f1 = f1_score(predictions_array, y_test, average="weighted")
-
-# confusion matrix code 
-
+# specify the labels to make the confusion matrix
 labels = ["ABC News", "BBC", "CNN", "Fox News", "NBC News", "New York Post",
           "The New York Times", "The Washington Post", "The Wall Street Journal"]
 
+# shorten the labels so that the source names can easily fit on the confusion matrix
 labels_short = ["ABC", "BBC", "CNN", "Fox", "NBC", "NYP",
           "NYT", "WP", "WSJ"]
 
+# create the plot of the confusion matrix 
 cm = confusion_matrix(y_test, predictions_array, labels=labels)
-#fig, ax = plt.subplots(figsize=(10, 10))
 disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=labels_short)
 disp.plot()
 fig = disp.ax_.get_figure() 
@@ -1086,7 +1265,7 @@ fig.set_figwidth(5)
 fig.set_figheight(5)
 ```
 
-We may also look at the confusion matrix above that was generated from the results of a Random Forest model with the best parameters that we previously determined. It shows us which sources the classifier predicted for an article, versus what the correct source actually was. Most of the time, the predicted and actual source were the same. We can see, for example, that it twice incorrectly predicted Fox News, when the true sources were The New York Times and New York Post. Neither of the New York Post articles were correctly classified as such. Unfortunately, it is difficult to infer the reasoning of such performance, especially with a black box model like Random Forest which does not provide interpretable reasoning behind prediction decisions. 
+We may also look at the confusion matrix above that was generated from the results of a Random Forest model that uses one of the parameters that led to the highest accuracy score of 61%. [Data Camp](https://www.datacamp.com/tutorial/naive-bayes-scikit-learn) was used as a source to code the confusion matrix (see @nb_confusion). It shows us which sources the classifier predicted for an article, versus what the correct source actually was. For more than half of the articles used in the holdout set (11/18), the predicted and actual source were the same (as seen on the diagonal of the confusion matrix). We can see, for example, that it twice incorrectly predicted Fox News to be the source, when the true source was New York Post. Neither of the New York Post or New York Times articles were correctly classified as such. Again, these are the predictions for just one of the many Random Forest models created. Unfortunately, it is difficult to infer the reasoning for these predictions, especially with a black box model like Random Forest which does not provide interpretable reasoning behind prediction decisions. 
 
 # Conclusions
 
@@ -1096,7 +1275,13 @@ To summarize what was revealed in this project, here are a few takeaways:
 
 * The New York Times articles in the sample have the strongest (negative) tone.
 
-* With a Random Forest model, we were able to correctly predict the source of an article up to 78% of the time, leading us to conclude that the wording between news sources is, in fact, distinct. 
+* With a Random Forest model, we were able to correctly predict the source of an article up to 61% of the time, leading us to conclude that the wording between news sources is, in fact, distinct. 
+
+# Future Work
+
+* Other kinds of classifiers could also be tested, such as Stochastic Gradient Descent (SGD). 
+* Using a much larger sample of articles could lead to better results, as they would better represent each source.
+* Create a definition of bias in terms of word usage. Can we classify an article or source as biased? 
 
 ::: {.callout-note collapse="true"}
 ## Articles used in project
