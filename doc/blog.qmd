@@ -349,8 +349,6 @@ tfidf_df.drop(columns=['abcarticle', 'bbcarticle', 'cnnarticle', 'foxarticle', '
                         'balloonarticle', 'bidenarticle', 'hamasarticle', 'pentagonarticle',
                         'santosarticle', 'tanksarticle', 'trumparticle'], inplace=True)
 
-tfidf_df.head()
-
 # create a list of strings where each string is all articles from one source (for dendogram)
 source_docs = []
 
@@ -413,6 +411,7 @@ tfidf_source_df.drop(['abcarticle', 'bbcarticle', 'cnnarticle', 'foxarticle',
                       'nbcarticle', 'nyparticle', 'nytarticle', 'wparticle',
                       'wsjarticle'], axis=1, inplace=True)
 # tfidf_source_df
+tfidf_df.head()
 ```
 
 
@@ -546,7 +545,7 @@ biden_words['article_length'] = biden_article_lengths
 biden_words['biden_word_count'] = biden_word_counts
 
 # create scatterplot of length of trump article vs frequency of the word "Trump"
-trump_scatter = (
+display(
 ggplot(data=trump_words,
        mapping=aes(x='article_length', y='trump_word_count', color='source'))
        + geom_point(show_legend=True)
@@ -557,7 +556,7 @@ ggplot(data=trump_words,
 )
 
 # create scatterplot of length of biden article vs frequency of the word "Biden"
-biden_scatter = (
+(
 ggplot(data=biden_words,
        mapping=aes(x='article_length', y='biden_word_count', color='source'))
        + geom_point(show_legend=True)
@@ -566,14 +565,6 @@ ggplot(data=biden_words,
               x='# of Words in Article',
               y='# of Times "Biden" Mentioned')
 )
-
-trump_scatter.save("trump_scatterplot.png", dpi=600)
-biden_scatter.save("biden_scatterplot.png", dpi=600)
-
-trump_img = 'trump_scatterplot.png'
-display(Image(url=trump_img))
-biden_img = 'biden_scatterplot.png'
-Image(url=biden_img)
 ```
 
 Above we used scatterplots to see how the length of the Trump articles are related to the frequency of the word "Trump" within them, by source. We do, in fact, see that the point for Fox News, corresponding to the article @foxtrump, is an outlier. Given its article length, it does mention Trump a lot more frequently than the Trump articles from other sources. Out of curiosity, we look at the same visualization for the word "Biden" in the Biden articles. Interestingly, Fox News again appears to be an outlier (see @foxbiden). Given its article length, it also mentions Biden a lot more frequently than the remaining sources. Now, it is not as easy to make assumptions about the partiality of Fox News just based on these word frequencies. They could be more telling of the writing styles of each source, or it could also merely be a result of using such a small sample size of articles.
@@ -691,18 +682,13 @@ Since the documentation of the calculation of these scores is limited, one may w
 # this may suggest that polarity score is used in the calculation of a subjectivity score
 # colored by topic
 
-pol_sub = (
+(
 ggplot(scores_df, aes(x="polarity_magnitude", y="subjectivity_score", color='topic'))
 + geom_point()
 + labs(x="Absolute Value of Polarity Score",
        y='Subjectivity Score',
        title='Are Polarity Score Magnitudes Correlated with Subjectivity Scores?')
 )
-
-pol_sub.save("scores_correlation.png", dpi=600)
-
-pol_sub_img = 'scores_correlation.png'
-Image(url=pol_sub_img)
 ```
 
 There does not appear to be a linear or any other sort of relationship between the polarity and subjectivity scores of the articles used in this project. However, the graph does show almost a cluster of points of the same color, telling that the articles about the Supreme Court ruling against affirmative action tend to have stronger polarity scores. The same graph may be visualized colored by source instead, to see if any clusters of sources are observed.
@@ -711,19 +697,13 @@ There does not appear to be a linear or any other sort of relationship between t
 ```{python}
 # scatterplot to see if polarity magnitudes and subjectivity scores are
 # correlated, colored by source
-pol_sub_2 = (
+(
 ggplot(scores_df, aes(x="polarity_magnitude", y="subjectivity_score", color='source'))
 + geom_point()
 + labs(x="Absolute Value of Polarity Score",
        y='Subjectivity Score',
        title='Are Polarity Score Magnitudes Correlated with Subjectivity Scores?')
 )
-
-# save image
-pol_sub_2.save("scores_correlation2.png", dpi=600)
-
-pol_sub_img2 = 'scores_correlation2.png'
-Image(url=pol_sub_img2)
 ```
 
 Something that can be observed on the scatterplot above is that the green dots, both for CNN and Fox News, tend to be on the lower half of the plot, meaning their articles tend to have lower subjectivity scores. In addition, the dark blue dots, representing The New York Times, tend to be on the upper half, signifying higher subjectivity scores for its articles. 
@@ -759,7 +739,7 @@ polarity_devs
 
 colors = {"pos":'#ffbf00', "neg":'#b7141c'}  
 
-score_dev = (
+(
 ggplot(polarity_devs, aes(x="source", y="polarity_dev", fill="sign"))
 + geom_col(stat="identity")
 + labs(x="Source", y='Average Article Polarity Score Deviation',
@@ -768,19 +748,13 @@ ggplot(polarity_devs, aes(x="source", y="polarity_dev", fill="sign"))
         title = element_text(size=13),legend_position = "none")
 + scale_fill_manual(values = colors)
 )
-
-# save image
-score_dev.save("polarity_score_dev.png", dpi=300)
-
-pol_score_dev_img = 'polarity_score_dev.png'
-Image(url=pol_score_dev_img)
 ```
 
 The visualization above tells us that The New York Times articles tend to be the most negative on average. They have the largest deviations from the topic's average polarity scores, which may indicate stronger wording. Each individual may infer what they wish with these results, but definitive conclusions should not be drawn from them, which will be explained a bit later. ABC News tends to write their articles more positive than average for the topics' mean polarity scores. BBC's articles are the closest to average polarity scores for each topic. The polarity scores may be viewed individually for the set of articles of any topic. Below, we see the polarity scores for the articles about the ruling against affirmative action. The New York Times was the only source with a negative polarity score for this topic, which could already be suggestive of its political views. 
 
 ```{python}
 # create bar chart of polarity scores of articles about a specific topic
-pol_affirm = (
+(
 ggplot(scores_df[scores_df['topic']=="Supreme Court Ruling on Affirmative Action"],
        aes(x="reorder(source, -polarity_score)", y="polarity_score", fill="polarity_sign"))
 + geom_col(stat="identity")
@@ -789,12 +763,6 @@ ggplot(scores_df[scores_df['topic']=="Supreme Court Ruling on Affirmative Action
         title = element_text(size=13), legend_position = "none")
 + scale_fill_manual(values = colors)
 )
-
-# save image
-pol_affirm.save("polarity_affirmative_articles.png", dpi=300)
-
-pol_affirm_img = 'polarity_affirmative_articles.png'
-Image(url=pol_affirm_img)
 ```
 
 Now let's look at a comparison of each source's average subjectivity scores. These do not need to be broken up by topic, since the scale for the score is [0,1].
@@ -820,19 +788,13 @@ source_avg_subj
 
 # bar chart showing avg subjectivity per source
 
-sub = (
+(
 ggplot(source_avg_subj, aes(x="source", y="avg_subj"))
 + geom_col(stat="identity", fill="#ffa140")
 + labs(x='Source', y='Average Subjectivity Score', title='Average Subjectivity Score by Source')
 + theme(figure_size = (10, 4), axis_text_x=element_text(size=8.5, face='bold'), 
         title = element_text(size=13), legend_position = "none")
 )
-
-# save image
-sub.save("avg_subjectivity.png", dpi=300)
-
-sub_img = 'avg_subjectivity.png'
-Image(url=sub_img)
 ```
 
 The bar chart above shows that Fox News has the lowest subjectivity scores on average, while the New York Times has the highest subjectivity score on average. Surprised? Do these results align with your opinions or what you commonly hear about these sources? Regardless, it is important to remember what these scores mean exactly and what we are able to reasonably infer from these results. The package that computes these scores has limited documentation, so the exact formulas are not known for the computation of a polarity or subjectivity score of a text. Each individual word has a scoring of its own and is marked as positive or negative, and the overall polarity score is some sort of aggregation of these scores. This does limit us in the interpretation of the scores. Moreover, this is only a small sample of articles collected from each source and their insights should not represent a source as a whole. It is entirely possible that a larger sample of articles from a wider variety of topics could yield different results.
